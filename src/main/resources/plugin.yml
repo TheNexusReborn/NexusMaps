@@ -1,0 +1,7 @@
+main: com.thenexusreborn.gamemaps.GameMaps
+name: ${project.name}
+version: ${project.version}
+author: Firestar311
+commands:
+  sgmap:
+    
