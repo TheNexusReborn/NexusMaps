@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.thenexusreborn</groupId>
-    <artifactId>GameMaps</artifactId>
+    <artifactId>NexusMaps</artifactId>
     <version>1.0-ALPHA</version>
 
     <properties>
