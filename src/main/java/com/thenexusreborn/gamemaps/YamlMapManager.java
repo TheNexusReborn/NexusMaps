@@ -23,12 +23,20 @@ public class YamlMapManager extends MapManager {
 
     @Override
     public void loadMaps() {
-        
+        for (File file : configsFolder.listFiles()) {
+            if (file.getName().contains(".yml")) {
+                FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+                SGMap sgMap = SGMap.loadFromYaml(config);
+                gameMaps.add(sgMap);
+            }
+        }
     }
 
     @Override
     public void saveMaps() {
-
+        for (SGMap gameMap : gameMaps) {
+            saveMap(gameMap);
+        }
     }
 
     @Override

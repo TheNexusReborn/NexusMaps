@@ -11,13 +11,13 @@ public abstract class MapManager {
     
     public static final Function<String, String> normalizeFunction = rawName -> rawName.toLowerCase().replace(" ", "_").replace("'", "");
     
-    private final JavaPlugin plugin;
-    private final List<SGMap> gameMaps = new ArrayList<>();
-    
-    private boolean editMode;
-    private SGMap mapBeingEdited;
-    private boolean viewingWorldBorder;
-    private String borderViewOption;
+    protected final JavaPlugin plugin;
+    protected final List<SGMap> gameMaps = new ArrayList<>();
+
+    protected boolean editMode;
+    protected SGMap mapBeingEdited;
+    protected boolean viewingWorldBorder;
+    protected String borderViewOption;
 
     public MapManager(JavaPlugin plugin) {
         this.plugin = plugin;
