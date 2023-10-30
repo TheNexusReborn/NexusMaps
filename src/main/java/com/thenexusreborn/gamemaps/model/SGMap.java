@@ -10,10 +10,7 @@ import me.firestar311.starsql.api.annotations.column.ColumnType;
 import me.firestar311.starsql.api.annotations.table.TableHandler;
 import me.firestar311.starsql.api.annotations.table.TableName;
 import me.firestar311.starsql.api.objects.codecs.StringSetCodec;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
-import org.bukkit.WorldCreator;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -90,6 +87,14 @@ public class SGMap {
     public SGMap(String fileName, String name) {
         this.url = fileName;
         this.name = name;
+    }
+    
+    public Location getCenterLocation() {
+        if (this.world != null) {
+            return getCenter().toLocation(this.world);
+        }
+        
+        return null;
     }
     
     public void recalculateSpawns() {
