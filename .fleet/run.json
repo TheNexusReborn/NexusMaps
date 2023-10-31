@@ -1,0 +1,9 @@
+{
+    "configurations": [
+        {
+            "type": "maven",
+            "name": "NexusMaps Build",
+            "tasks": ["clean", "package", "install"],
+        },
+    ]
+}
