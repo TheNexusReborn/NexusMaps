@@ -3,6 +3,8 @@ package com.thenexusreborn.gamemaps.model;
 import me.firestar311.starlib.spigot.utils.Position;
 import me.firestar311.starsql.api.annotations.table.TableName;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.util.Vector;
 
 import java.util.Objects;
 
@@ -54,6 +56,20 @@ public class MapSpawn extends Position implements Comparable<MapSpawn> {
     
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public Location toGameLocation(World world, Location mapCenter) {
+        return new Location(world, x + 0.5, y + 2, z + 0.5, getAngle(new Vector(x, y, z), mapCenter.toVector()), 0);
+    }
+
+    private static float getAngle(Vector point1, Vector point2) {
+        double dx = point2.getX() - point1.getX();
+        double dz = point2.getZ() - point1.getZ();
+        float angle = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90;
+        if (angle < 0) {
+            angle += 360.0F;
+        }
+        return angle;
     }
     
     @Override
