@@ -1,4 +1,4 @@
-main: com.thenexusreborn.gamemaps.GameMaps
+main: com.thenexusreborn.gamemaps.NexusGameMaps
 name: ${project.name}
 version: ${project.version}
 author: Firestar311
