@@ -38,6 +38,16 @@ public class YamlMapManager extends MapManager {
             saveMap(gameMap);
         }
     }
+    
+    public void deleteMap(SGMap map) {
+        File configFile = new File(configsFolder, normalizeFunction.apply(map.getName()) + File.separator + ".yml");
+        if (!configFile.exists()) {
+            return;
+        }
+        
+        configFile.delete();
+        this.getMaps().remove(map);
+    }
 
     @Override
     public void saveMap(SGMap gameMap) {

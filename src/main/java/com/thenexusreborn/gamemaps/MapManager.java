@@ -27,6 +27,14 @@ public abstract class MapManager {
     public abstract void saveMaps();
     public abstract void saveMap(SGMap gameMap);
     public abstract SGMap loadMap(String name);
+    public abstract void deleteMap(SGMap map);
+    
+    public void deleteMap(String name) {
+        SGMap map = getMap(name);
+        if (map != null) {
+            deleteMap(map);
+        }
+    }
 
     public SGMap getMap(String mapName) {
         for (SGMap gameMap : this.gameMaps) {
