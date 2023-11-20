@@ -1,6 +1,6 @@
 package com.thenexusreborn.gamemaps.model;
 
-import me.firestar311.starlib.spigot.utils.Position;
+import com.stardevllc.starmclib.Position;
 import me.firestar311.starsql.api.annotations.table.TableName;
 import org.bukkit.Location;
 import org.bukkit.World;

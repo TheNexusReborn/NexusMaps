@@ -1,9 +1,9 @@
 package com.thenexusreborn.gamemaps.tasks;
 
+import com.stardevllc.starmclib.Cuboid;
+import com.stardevllc.starmclib.Position;
+import com.stardevllc.starmclib.color.ColorUtils;
 import com.thenexusreborn.gamemaps.model.SGMap;
-import me.firestar311.starlib.spigot.utils.Cuboid;
-import me.firestar311.starlib.spigot.utils.Position;
-import me.firestar311.starlib.spigot.utils.color.ColorUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

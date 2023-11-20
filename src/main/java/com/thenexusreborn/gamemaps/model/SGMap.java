@@ -1,9 +1,9 @@
 package com.thenexusreborn.gamemaps.model;
 
-import me.firestar311.starlib.api.FileHelper;
-import me.firestar311.starlib.spigot.utils.Cuboid;
-import me.firestar311.starlib.spigot.utils.Position;
-import me.firestar311.starlib.spigot.utils.ServerProperties;
+import com.stardevllc.starmclib.Cuboid;
+import com.stardevllc.starmclib.Position;
+import com.stardevllc.starmclib.ServerProperties;
+import com.thenexusreborn.gamemaps.FileHelper;
 import me.firestar311.starsql.api.annotations.column.ColumnCodec;
 import me.firestar311.starsql.api.annotations.column.ColumnIgnored;
 import me.firestar311.starsql.api.annotations.column.ColumnType;

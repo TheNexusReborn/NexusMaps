@@ -1,10 +1,10 @@
 package com.thenexusreborn.gamemaps;
 
+import com.stardevllc.starmclib.Position;
+import com.stardevllc.starmclib.color.ColorUtils;
 import com.thenexusreborn.gamemaps.model.MapSpawn;
 import com.thenexusreborn.gamemaps.model.SGMap;
 import com.thenexusreborn.gamemaps.tasks.AnalyzeThread;
-import me.firestar311.starlib.spigot.utils.Position;
-import me.firestar311.starlib.spigot.utils.color.ColorUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;

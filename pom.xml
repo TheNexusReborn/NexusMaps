@@ -61,9 +61,8 @@
 
     <repositories>
         <repository>
-            <id>reposilite</id>
-            <name>Laptop Repo</name>
-            <url>http://localhost:8080/snapshots</url>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
         <repository>
             <id>spigotmc-repo</id>
@@ -79,27 +78,27 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>me.firestar311.starlib</groupId>
-            <artifactId>starlib-api</artifactId>
-            <version>1.1.2-SNAPSHOT</version>
+            <groupId>com.github.StarDevelopmentLLC</groupId>
+            <artifactId>StarLib</artifactId>
+            <version>1.0.0-alpha.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>me.firestar311.starlib</groupId>
-            <artifactId>starlib-spigot</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <groupId>com.github.StarDevelopmentLLC</groupId>
+            <artifactId>StarMCLib</artifactId>
+            <version>1.0.0-alpha.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Firestar311.StarSQL</groupId>
+            <artifactId>mysql</artifactId>
+            <version>09988aece6</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>me.firestar311.starsql</groupId>
-            <artifactId>starsql-api</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>me.firestar311.starclock</groupId>
-            <artifactId>starclock-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>com.github.Firestar311.StarClock</groupId>
+            <artifactId>api</artifactId>
+            <version>ff3b94d2ce</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
