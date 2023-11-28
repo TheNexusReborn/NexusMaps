@@ -86,25 +86,13 @@
         <dependency>
             <groupId>com.github.StarDevelopmentLLC</groupId>
             <artifactId>StarMCLib</artifactId>
-            <version>1.0.0-alpha.1</version>
+            <version>1.0.0-alpha.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.Firestar311.StarSQL</groupId>
             <artifactId>mysql</artifactId>
             <version>09988aece6</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.Firestar311.StarClock</groupId>
-            <artifactId>api</artifactId>
-            <version>ff3b94d2ce</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>me.firestar311.starui</groupId>
-            <artifactId>StarUI</artifactId>
-            <version>1.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
