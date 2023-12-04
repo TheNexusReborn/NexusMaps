@@ -72,22 +72,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>${minecraft.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.github.StarDevelopmentLLC</groupId>
-            <artifactId>StarLib</artifactId>
+            <artifactId>StarCore</artifactId>
             <version>1.0.0-alpha.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.StarDevelopmentLLC</groupId>
-            <artifactId>StarMCLib</artifactId>
-            <version>1.0.0-alpha.2</version>
-            <scope>compile</scope>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot</artifactId>
+            <version>${minecraft.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.Firestar311.StarSQL</groupId>
