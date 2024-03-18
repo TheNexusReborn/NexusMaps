@@ -11,7 +11,7 @@ import java.io.IOException;
 public class YamlMapManager extends MapManager {
     
     private File configsFolder;
-    private long lastId;
+    private long lastId = 1;
     
     public YamlMapManager(JavaPlugin plugin) {
         super(plugin);
@@ -19,6 +19,14 @@ public class YamlMapManager extends MapManager {
         if (!configsFolder.exists()) {
             configsFolder.mkdirs();
         }
+    }
+
+    public long getLastId() {
+        return lastId;
+    }
+
+    public void setLastId(long lastId) {
+        this.lastId = lastId;
     }
 
     @Override
@@ -59,6 +67,10 @@ public class YamlMapManager extends MapManager {
                 return;
             }
         }
+        
+        if (gameMap.getId() == 0) {
+            gameMap.setId(++this.lastId);
+        }
 
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
         gameMap.saveToYaml(config);
@@ -78,6 +90,10 @@ public class YamlMapManager extends MapManager {
         }
         
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
-        return SGMap.loadFromYaml(config);
+        SGMap sgMap = SGMap.loadFromYaml(config);
+        if (this.lastId < sgMap.getId()) {
+            this.lastId = sgMap.getId();
+        }
+        return sgMap;
     }
 }
