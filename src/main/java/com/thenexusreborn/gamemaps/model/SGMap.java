@@ -34,7 +34,7 @@ public class SGMap {
     
     private Position center;
     @ColumnIgnored
-    private Set<MapSpawn> spawns = new HashSet<>();
+    private Set<MapSpawn> spawns = new LinkedHashSet<>();
     private int borderDistance, deathmatchBorderDistance;
     @ColumnType("varchar(1000)")
     @ColumnCodec(StringSetCodec.class)
@@ -247,8 +247,8 @@ public class SGMap {
         this.center = center;
     }
     
-    public Set<MapSpawn> getSpawns() {
-        return spawns;
+    public List<MapSpawn> getSpawns() {
+        return new LinkedList<>(spawns);
     }
     
     public int getBorderDistance() {
