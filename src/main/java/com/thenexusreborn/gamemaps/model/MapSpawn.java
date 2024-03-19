@@ -31,7 +31,7 @@ public class MapSpawn extends Position implements Comparable<MapSpawn> {
     
     @Override
     public String toString() {
-        return "(" + x + "," + y + "," + z + ')';
+        return "(" + id + "," + index + "," + mapId + ") (" + x + "," + y + "," + z + ')';
     }
     
     public long getId() {
