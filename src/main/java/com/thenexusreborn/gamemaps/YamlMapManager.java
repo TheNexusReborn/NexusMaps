@@ -48,7 +48,7 @@ public class YamlMapManager extends MapManager {
     }
     
     public void deleteMap(SGMap map) {
-        File configFile = new File(configsFolder, normalizeFunction.apply(map.getName()) + File.separator + ".yml");
+        File configFile = new File(configsFolder, normalizeFunction.apply(map.getName())+ ".yml");
         if (!configFile.exists()) {
             return;
         }
@@ -59,11 +59,12 @@ public class YamlMapManager extends MapManager {
 
     @Override
     public void saveMap(SGMap gameMap) {
-        File configFile = new File(configsFolder, normalizeFunction.apply(gameMap.getName()) + File.separator + ".yml");
+        File configFile = new File(configsFolder, normalizeFunction.apply(gameMap.getName()) + ".yml");
         if (!configFile.exists()) {
             try {
                 configFile.createNewFile();
             } catch (IOException e) {
+                e.printStackTrace();
                 return;
             }
         }
@@ -78,13 +79,14 @@ public class YamlMapManager extends MapManager {
         try {
             config.save(configFile);
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public SGMap loadMap(String name) {
         String mapName = normalizeFunction.apply(name);
-        File configFile = new File(configsFolder, mapName + File.separator + ".yml");
+        File configFile = new File(configsFolder, mapName + ".yml");
         if (!configFile.exists()) {
             return null;
         }
