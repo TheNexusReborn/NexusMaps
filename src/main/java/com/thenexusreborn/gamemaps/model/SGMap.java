@@ -34,7 +34,7 @@ public class SGMap {
     
     private Position center;
     @ColumnIgnored
-    private List<MapSpawn> spawns = new LinkedList<>();
+    private Set<MapSpawn> spawns = new HashSet<>();
     private int borderDistance, deathmatchBorderDistance;
     @ColumnType("varchar(1000)")
     @ColumnCodec(StringSetCodec.class)
@@ -66,22 +66,31 @@ public class SGMap {
     
     public boolean isSetup() {
         if (this.center == null) {
+            System.out.println("Center for map " + getName() + " is null");
             return false;
         }
         
         if (this.spawns.size() != 24) {
+            System.out.println("Spawn size for map " + getName() + " is " + this.spawns.size());
             return false;
         }
         
         if (this.borderDistance == 0) {
+            System.out.println("Border for map " + getName() + " is 0");
             return false;
         }
         
         if (this.deathmatchBorderDistance == 0) {
+            System.out.println("Deathmatch Border Distance for map " + getName() + " is 0");
+            return false;
+        }
+        
+        if (creators.isEmpty()) {
+            System.out.println("Creators for map " + getName() + " is empty");
             return false;
         }
 
-        return !creators.isEmpty();
+        return true;
     }
     
     public SGMap(String fileName, String name) {
@@ -238,7 +247,7 @@ public class SGMap {
         this.center = center;
     }
     
-    public List<MapSpawn> getSpawns() {
+    public Set<MapSpawn> getSpawns() {
         return spawns;
     }
     
@@ -533,7 +542,7 @@ public class SGMap {
         String url = config.getString("url");
         String name = config.getString("name");
         SGMap map = new SGMap(url, name);
-        map.setActive(config.getBoolean("active"));
+        map.setId(id);
         map.setBorderDistance(config.getInt("borderDistance"));
         map.setDeathmatchBorderDistance(config.getInt("deathmatchBorderDistance"));
         if (config.contains("center")) {
@@ -574,6 +583,8 @@ public class SGMap {
                 }
             }
         }
+
+        map.setActive(config.getBoolean("active"));
         
         return map;
     }
