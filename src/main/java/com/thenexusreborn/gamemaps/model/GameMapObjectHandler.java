@@ -1,8 +1,8 @@
 package com.thenexusreborn.gamemaps.model;
 
-import me.firestar311.starsql.api.objects.ObjectHandler;
-import me.firestar311.starsql.api.objects.SQLDatabase;
-import me.firestar311.starsql.api.objects.Table;
+import com.thenexusreborn.api.sql.objects.ObjectHandler;
+import com.thenexusreborn.api.sql.objects.SQLDatabase;
+import com.thenexusreborn.api.sql.objects.Table;
 
 import java.sql.SQLException;
 import java.util.List;

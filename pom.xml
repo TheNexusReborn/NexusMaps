@@ -84,9 +84,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.Firestar311.StarSQL</groupId>
-            <artifactId>mysql</artifactId>
-            <version>15dd9f0c77</version>
+            <groupId>com.thenexusreborn</groupId>
+            <artifactId>NexusCore</artifactId>
+            <version>1.11-ALPHA</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

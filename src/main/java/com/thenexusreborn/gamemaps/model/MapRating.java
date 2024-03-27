@@ -1,6 +1,6 @@
 package com.thenexusreborn.gamemaps.model;
 
-import me.firestar311.starsql.api.annotations.table.TableName;
+import com.thenexusreborn.api.sql.annotations.table.TableName;
 
 import java.util.UUID;
 
