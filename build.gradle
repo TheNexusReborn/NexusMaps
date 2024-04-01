@@ -25,9 +25,9 @@ processResources {
 }
 
 dependencies {
-    compileOnly 'com.github.StarDevelopmentLLC:StarCore:1.0.0-alpha.14'
+    compileOnly 'com.github.StarDevelopmentLLC:StarCore:1.0.0-alpha.15'
     compileOnly 'org.spigotmc:spigot:1.8.8-R0.1-SNAPSHOT'
-    compileOnly 'com.thenexusreborn:NexusCore:1.11-ALPHA'
+    compileOnly 'com.thenexusreborn:NexusCore:1.12-ALPHA'
 }
 
 group = 'com.thenexusreborn'
