@@ -18,6 +18,12 @@ repositories {
     }
 }
 
+processResources {
+    filesMatching("*.yml") {
+        expand(project.properties)
+    }
+}
+
 dependencies {
     compileOnly 'com.github.StarDevelopmentLLC:StarCore:1.0.0-alpha.14'
     compileOnly 'org.spigotmc:spigot:1.8.8-R0.1-SNAPSHOT'
@@ -42,3 +48,5 @@ publishing {
         }
     }
 }
+
+tasks.compileJava.dependsOn(clean)

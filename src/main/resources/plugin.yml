@@ -1,5 +1,5 @@
 main: com.thenexusreborn.gamemaps.NexusGameMaps
-name: ${project.name}
-version: ${project.version}
+name: ${name}
+version: ${version}
 author: Firestar311
     
