@@ -104,7 +104,7 @@ public class SGMapCommand implements CommandExecutor {
                 }
                 case "load", "l" -> {
                     gameMap.unzip(plugin);
-                    gameMap.copyFolder(plugin, false);
+                    gameMap.copyFolder(plugin, "", false);
                     gameMap.load(plugin);
                     if (gameMap.getWorld() != null) {
                         sender.sendMessage(ColorUtils.color("Successfully loaded the map " + gameMap.getName() + "."));
@@ -342,7 +342,7 @@ public class SGMapCommand implements CommandExecutor {
                         }
 
                         finalGameMap.unzip(plugin);
-                        finalGameMap.copyFolder(plugin, false);
+                        finalGameMap.copyFolder(plugin, "", false);
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             if (!finalGameMap.load(plugin)) {
                                 sender.sendMessage(ColorUtils.color("Could not load the map " + finalGameMap.getName() + ". Please report as a bug."));

@@ -355,7 +355,7 @@ public class SGMap {
         return path;
     }
     
-    public boolean copyFolder(JavaPlugin plugin, boolean randomizeName) {
+    public boolean copyFolder(JavaPlugin plugin, String prefix, boolean randomizeName) {
         try {
             if (this.unzippedFolder != null) {
                 String worldName;
@@ -365,7 +365,7 @@ public class SGMap {
                 } else {
                     worldName = this.name;
                 }
-                this.worldFolder = FileHelper.subPath(Bukkit.getServer().getWorldContainer().toPath(), worldName);
+                this.worldFolder = FileHelper.subPath(Bukkit.getServer().getWorldContainer().toPath(), prefix + worldName);
                 FileHelper.createDirectoryIfNotExists(worldFolder);
                 FileHelper.copyFolder(this.unzippedFolder, worldFolder);
             }
