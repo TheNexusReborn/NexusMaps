@@ -31,6 +31,7 @@ public class SGMap {
     private long id;
     private String url;
     private String name;
+    private String prefix;
     
     private Position center;
     @ColumnIgnored
@@ -365,11 +366,13 @@ public class SGMap {
                 } else {
                     worldName = this.name;
                 }
-                this.worldFolder = FileHelper.subPath(Bukkit.getServer().getWorldContainer().toPath(), prefix + worldName);
+                this.prefix = (prefix != null) ? prefix : "";
+                this.worldFolder = FileHelper.subPath(Bukkit.getServer().getWorldContainer().toPath(), this.prefix + worldName);
                 FileHelper.createDirectoryIfNotExists(worldFolder);
                 FileHelper.copyFolder(this.unzippedFolder, worldFolder);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -378,7 +381,7 @@ public class SGMap {
     public boolean load(JavaPlugin plugin) {
         try {
             if (this.worldFolder != null) {
-                this.world = Bukkit.createWorld(new WorldCreator(this.name));
+                this.world = Bukkit.createWorld(new WorldCreator(this.prefix + this.name));
                 return this.world != null;
             }
         } catch (Exception e) {
