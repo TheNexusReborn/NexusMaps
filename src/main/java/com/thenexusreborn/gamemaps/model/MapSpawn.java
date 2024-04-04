@@ -1,6 +1,6 @@
 package com.thenexusreborn.gamemaps.model;
 
-import com.stardevllc.starmclib.Position;
+import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.api.sql.annotations.table.TableName;
 import org.bukkit.Location;
 import org.bukkit.World;
