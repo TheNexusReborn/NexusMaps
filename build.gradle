@@ -41,6 +41,10 @@ java {
     }
 }
 
+jar {
+    destinationDirectory = file(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "JarOutput" + File.separator + "NexusReborn")
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
