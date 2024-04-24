@@ -25,7 +25,7 @@ processResources {
 }
 
 dependencies {
-    compileOnly 'com.github.StarDevelopmentLLC:StarCore:1.0.0-alpha.25'
+    compileOnly 'com.github.StarDevelopmentLLC:StarCore:1.0.0-alpha.27'
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     compileOnly 'com.thenexusreborn:NexusCore:1.12-ALPHA'
 }
