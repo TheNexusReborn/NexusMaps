@@ -1,6 +1,6 @@
 package com.thenexusreborn.gamemaps;
 
-import com.stardevllc.starcore.color.ColorUtils;
+import com.stardevllc.starcore.color.ColorHandler;
 import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.gamemaps.model.MapSpawn;
 import com.thenexusreborn.gamemaps.model.SGMap;
@@ -26,43 +26,43 @@ public class SGMapCommand implements CommandExecutor {
     
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(args.length > 0)) {
-            sender.sendMessage(ColorUtils.color("You must provide a sub command."));
+            sender.sendMessage(ColorHandler.getInstance().color("You must provide a sub command."));
             return true;
         }
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ColorUtils.color("Only players can use that command."));
+            sender.sendMessage(ColorHandler.getInstance().color("Only players can use that command."));
             return true;
         }
 
         String mapSubCommand = args[0].toLowerCase();
 
         if (!mapManager.isEditMode()) {
-            sender.sendMessage(ColorUtils.color("You can only use that command when map editing mode is active."));
+            sender.sendMessage(ColorHandler.getInstance().color("You can only use that command when map editing mode is active."));
             return true;
         }
 
         if (mapSubCommand.equals("create") || mapSubCommand.equals("c")) {
             if (!(args.length > 2)) {
-                sender.sendMessage(ColorUtils.color("Usage: /" + label + " create <url> <name>"));
+                sender.sendMessage(ColorHandler.getInstance().color("Usage: /" + label + " create <url> <name>"));
                 return true;
             }
 
             String url = args[1];
             String mapName = getMapNameFromCommand(args, 2);
             if (mapManager.getMap(mapName) != null) {
-                sender.sendMessage(ColorUtils.color("A map with that name already exists."));
+                sender.sendMessage(ColorHandler.getInstance().color("A map with that name already exists."));
                 return true;
             }
 
             SGMap gameMap = new SGMap(url, mapName);
             mapManager.addMap(gameMap);
-            sender.sendMessage(ColorUtils.color("Created a map with the name " + gameMap.getName() + "."));
+            sender.sendMessage(ColorHandler.getInstance().color("Created a map with the name " + gameMap.getName() + "."));
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     mapManager.saveMap(gameMap);
-                    sender.sendMessage(ColorUtils.color("The map has been saved to the database."));
+                    sender.sendMessage(ColorHandler.getInstance().color("The map has been saved to the database."));
                 }
             }.runTaskAsynchronously(plugin);
         } else {
@@ -83,7 +83,7 @@ public class SGMapCommand implements CommandExecutor {
             }
 
             if (gameMap == null) {
-                player.sendMessage(ColorUtils.color("Could not find a valid map."));
+                player.sendMessage(ColorHandler.getInstance().color("Could not find a valid map."));
                 return true;
             }
 
@@ -91,13 +91,13 @@ public class SGMapCommand implements CommandExecutor {
                 case "download", "dl" -> {
                     SGMap finalGameMap = gameMap;
                     mapManager.setMapBeingEdited(finalGameMap);
-                    player.sendMessage(ColorUtils.color("Please wait, downloading the map " + finalGameMap.getName() + "."));
+                    player.sendMessage(ColorHandler.getInstance().color("Please wait, downloading the map " + finalGameMap.getName() + "."));
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                         boolean successful = finalGameMap.download(plugin);
                         if (successful) {
-                            player.sendMessage(ColorUtils.color("Downloaded the map " + finalGameMap.getName() + "."));
+                            player.sendMessage(ColorHandler.getInstance().color("Downloaded the map " + finalGameMap.getName() + "."));
                         } else {
-                            player.sendMessage(ColorUtils.color("Failed to download the map " + finalGameMap.getName()));
+                            player.sendMessage(ColorHandler.getInstance().color("Failed to download the map " + finalGameMap.getName()));
                         }
                     });
                     return true;
@@ -107,16 +107,16 @@ public class SGMapCommand implements CommandExecutor {
                     gameMap.copyFolder(plugin, "", false);
                     gameMap.load(plugin);
                     if (gameMap.getWorld() != null) {
-                        sender.sendMessage(ColorUtils.color("Successfully loaded the map " + gameMap.getName() + "."));
+                        sender.sendMessage(ColorHandler.getInstance().color("Successfully loaded the map " + gameMap.getName() + "."));
                     } else {
-                        sender.sendMessage(ColorUtils.color("Could not load the map " + gameMap.getName() + ". Please report as a bug."));
+                        sender.sendMessage(ColorHandler.getInstance().color("Could not load the map " + gameMap.getName() + ". Please report as a bug."));
                     }
                     return true;
                 }
                 case "teleport", "tp" -> {
                     Location spawn;
                     if (gameMap.getWorld() == null) {
-                        sender.sendMessage(ColorUtils.color("That map is not loaded. Please load before teleporting."));
+                        sender.sendMessage(ColorHandler.getInstance().color("That map is not loaded. Please load before teleporting."));
                         return true;
                     }
                     if (gameMap.getCenter() != null) {
@@ -125,24 +125,24 @@ public class SGMapCommand implements CommandExecutor {
                         spawn = gameMap.getWorld().getSpawnLocation();
                     }
                     player.teleport(spawn);
-                    player.sendMessage(ColorUtils.color("Teleported to the map " + gameMap.getName()));
+                    player.sendMessage(ColorHandler.getInstance().color("Teleported to the map " + gameMap.getName()));
                     return true;
                 }
                 case "save", "s" -> {
                     mapManager.saveMap(gameMap);
-                    player.sendMessage(ColorUtils.color("Saved the settings for the map " + gameMap.getName()));
+                    player.sendMessage(ColorHandler.getInstance().color("Saved the settings for the map " + gameMap.getName()));
                 }
                 case "removefromserver", "rfs" -> {
                     mapManager.setMapBeingEdited(null);
                     gameMap.removeFromServer(plugin);
-                    player.sendMessage(ColorUtils.color("Removed the map " + gameMap.getName() + " from the server."));
+                    player.sendMessage(ColorHandler.getInstance().color("Removed the map " + gameMap.getName() + " from the server."));
                     return true;
                 }
-                case "delete" -> player.sendMessage(ColorUtils.color("This command is not yet implemented."));
+                case "delete" -> player.sendMessage(ColorHandler.getInstance().color("This command is not yet implemented."));
                 case "addspawn", "as" -> {
                     Location location = player.getLocation();
                     int position = gameMap.addSpawn(new MapSpawn(0, -1, location.getBlockX(), location.getBlockY(), location.getBlockZ()));
-                    sender.sendMessage(ColorUtils.color("You added a spawn with index &b" + (position + 1) + " &eto the map &b" + gameMap.getName()));
+                    sender.sendMessage(ColorHandler.getInstance().color("You added a spawn with index &b" + (position + 1) + " &eto the map &b" + gameMap.getName()));
                 }
                 case "setspawn", "sp" -> {
                     int argIndex;
@@ -153,7 +153,7 @@ public class SGMapCommand implements CommandExecutor {
                     }
 
                     if (!(args.length > argIndex)) {
-                        sender.sendMessage(ColorUtils.color("You must provide an index for the spawn."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You must provide an index for the spawn."));
                         return true;
                     }
 
@@ -161,18 +161,18 @@ public class SGMapCommand implements CommandExecutor {
                     try {
                         position = Integer.parseInt(args[argIndex]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ColorUtils.color("You provided an invalid number for the spawn index."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You provided an invalid number for the spawn index."));
                         return true;
                     }
 
                     Location location = player.getLocation();
                     gameMap.setSpawn(position, new MapSpawn(gameMap.getId(), position, location.getBlockX(), location.getBlockY(), location.getBlockZ()));
-                    sender.sendMessage(ColorUtils.color("You set the spawn at position &b" + position + " &eto your location in the map &b" + gameMap.getName()));
+                    sender.sendMessage(ColorHandler.getInstance().color("You set the spawn at position &b" + position + " &eto your location in the map &b" + gameMap.getName()));
                 }
                 case "setcenter", "sc" -> {
                     Location location = player.getPlayer().getLocation();
                     gameMap.setCenter(new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
-                    player.sendMessage(ColorUtils.color("You set the center of the map &b" + gameMap.getName() + " &eto your current location."));
+                    player.sendMessage(ColorHandler.getInstance().color("You set the center of the map &b" + gameMap.getName() + " &eto your current location."));
                 }
                 case "setborderradius", "sbr" -> {
                     int argIndex;
@@ -183,7 +183,7 @@ public class SGMapCommand implements CommandExecutor {
                     }
 
                     if (!(args.length > argIndex)) {
-                        sender.sendMessage(ColorUtils.color("You must provide a radius."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You must provide a radius."));
                         return true;
                     }
 
@@ -191,7 +191,7 @@ public class SGMapCommand implements CommandExecutor {
                     try {
                         radius = Integer.parseInt(args[argIndex]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ColorUtils.color("You provided an invalid number for the radius."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You provided an invalid number for the radius."));
                         return true;
                     }
 
@@ -199,7 +199,7 @@ public class SGMapCommand implements CommandExecutor {
                     if (mapManager.isViewingWorldBorder()) {
                         gameMap.applyWorldBoarder(mapManager.getBorderViewOption());
                     }
-                    sender.sendMessage(ColorUtils.color("You set the border radius on map &b" + gameMap.getName() + " &eto &b" + radius));
+                    sender.sendMessage(ColorHandler.getInstance().color("You set the border radius on map &b" + gameMap.getName() + " &eto &b" + radius));
                 }
                 case "setdeathmatchborderradius", "sdmbr" -> {
                     int argIndex;
@@ -210,7 +210,7 @@ public class SGMapCommand implements CommandExecutor {
                     }
 
                     if (!(args.length > argIndex)) {
-                        sender.sendMessage(ColorUtils.color("You must provide a radius."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You must provide a radius."));
                         return true;
                     }
 
@@ -218,7 +218,7 @@ public class SGMapCommand implements CommandExecutor {
                     try {
                         radius = Integer.parseInt(args[argIndex]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ColorUtils.color("You provided an invalid number for the radius."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You provided an invalid number for the radius."));
                         return true;
                     }
 
@@ -226,7 +226,7 @@ public class SGMapCommand implements CommandExecutor {
                     if (mapManager.isViewingWorldBorder()) {
                         gameMap.applyWorldBoarder(mapManager.getBorderViewOption());
                     }
-                    sender.sendMessage(ColorUtils.color("You set the deathmatch border radius on map &b" + gameMap.getName() + " &eto &b" + radius));
+                    sender.sendMessage(ColorHandler.getInstance().color("You set the deathmatch border radius on map &b" + gameMap.getName() + " &eto &b" + radius));
                 }
                 case "creators", "cs" -> {
                     int argIndex;
@@ -237,7 +237,7 @@ public class SGMapCommand implements CommandExecutor {
                     }
 
                     if (!(args.length > argIndex)) {
-                        sender.sendMessage(ColorUtils.color("You must provide the creators."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You must provide the creators."));
                         return true;
                     }
 
@@ -248,13 +248,13 @@ public class SGMapCommand implements CommandExecutor {
 
                     String[] creators = cb.toString().trim().split(",");
                     if (creators.length == 0) {
-                        sender.sendMessage(ColorUtils.color("You must separate the creators with commas."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You must separate the creators with commas."));
                         return true;
                     }
 
                     for (String creator : creators) {
                         gameMap.addCreator(creator);
-                        sender.sendMessage(ColorUtils.color("You added " + creator + " as a creator on map " + gameMap.getName()));
+                        sender.sendMessage(ColorHandler.getInstance().color("You added " + creator + " as a creator on map " + gameMap.getName()));
                     }
                 }
                 case "setactive", "sa" -> {
@@ -266,39 +266,39 @@ public class SGMapCommand implements CommandExecutor {
                     }
 
                     if (!(args.length > argIndex)) {
-                        sender.sendMessage(ColorUtils.color("You must provide a true or false value."));
+                        sender.sendMessage(ColorHandler.getInstance().color("You must provide a true or false value."));
                         return true;
                     }
 
                     boolean value = Boolean.parseBoolean(args[argIndex]);
                     gameMap.setActive(value);
                     if (value && !gameMap.isActive()) {
-                        sender.sendMessage(ColorUtils.color("Failed to set the map to an active status, there are required elements missing."));
+                        sender.sendMessage(ColorHandler.getInstance().color("Failed to set the map to an active status, there are required elements missing."));
                     } else {
-                        sender.sendMessage(ColorUtils.color("You set the status of the map to " + value));
+                        sender.sendMessage(ColorHandler.getInstance().color("You set the status of the map to " + value));
                     }
                 }
                 case "setswagshack", "sss" -> {
                     Location location = player.getPlayer().getLocation();
                     gameMap.setSwagShack(new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
-                    player.sendMessage(ColorUtils.color("You set the swag shack of the map &b" + gameMap.getName() + " &eto your current location."));
+                    player.sendMessage(ColorHandler.getInstance().color("You set the swag shack of the map &b" + gameMap.getName() + " &eto your current location."));
                 }
                 case "viewborder", "vb" -> {
                     if (!(args.length > 2)) {
-                        player.sendMessage(ColorUtils.color("You must say if it is for the game or deathmatch."));
+                        player.sendMessage(ColorHandler.getInstance().color("You must say if it is for the game or deathmatch."));
                         return true;
                     }
                     
                     String viewOption = args[1].toLowerCase();
                     if (!(viewOption.equals("game") || viewOption.equals("deathmatch"))) {
-                        player.sendMessage(ColorUtils.color("You provided an invalid type."));
+                        player.sendMessage(ColorHandler.getInstance().color("You provided an invalid type."));
                         return true;
                     }
                     
                     gameMap.applyWorldBoarder(viewOption);
                     mapManager.setBorderViewOption(viewOption);
                     mapManager.setViewingWorldBorder(true);
-                    player.sendMessage(ColorUtils.color("You are now viewing the world border as " + args[1].toLowerCase()));
+                    player.sendMessage(ColorHandler.getInstance().color("You are now viewing the world border as " + args[1].toLowerCase()));
                     return true;
                 }
                 case "disableworldborder", "dwb" -> {
@@ -306,9 +306,9 @@ public class SGMapCommand implements CommandExecutor {
                         mapManager.setViewingWorldBorder(false);
                         mapManager.setBorderViewOption("");
                         gameMap.disableWorldBorder();
-                        player.sendMessage(ColorUtils.color("You disabled the world border preview."));
+                        player.sendMessage(ColorHandler.getInstance().color("You disabled the world border preview."));
                     } else {
-                        player.sendMessage(ColorUtils.color("The world border is not being previewed."));
+                        player.sendMessage(ColorHandler.getInstance().color("The world border is not being previewed."));
                     }
                     return true;
                 }
@@ -318,26 +318,26 @@ public class SGMapCommand implements CommandExecutor {
                     gameMap.setWorkbenches(0);
                     gameMap.setTotalBlocks(0);
                     gameMap.setFurnaces(0);
-                    player.sendMessage(ColorUtils.color("Performing map analysis on " + gameMap.getName()));
+                    player.sendMessage(ColorHandler.getInstance().color("Performing map analysis on " + gameMap.getName()));
                     Bukkit.getServer().getScheduler().runTaskLaterAsynchronously(plugin, new AnalyzeThread(plugin, gameMap, player), 1L);
                     return true;
                 }
                 case "analysis" -> {
-                    player.sendMessage(ColorUtils.color("Map analysis results for &b" + gameMap.getName()));
-                    player.sendMessage(ColorUtils.color("Total Blocks: &b" + gameMap.getTotalBlocks()));
-                    player.sendMessage(ColorUtils.color("Total Chests: &b" + gameMap.getChests()));
-                    player.sendMessage(ColorUtils.color("Total Workbenches: &b" + gameMap.getWorkbenches()));
-                    player.sendMessage(ColorUtils.color("Total Enchantment Tables: &b" + gameMap.getEnchantTables()));
-                    player.sendMessage(ColorUtils.color("Total Furnaces: &b" + gameMap.getFurnaces()));
+                    player.sendMessage(ColorHandler.getInstance().color("Map analysis results for &b" + gameMap.getName()));
+                    player.sendMessage(ColorHandler.getInstance().color("Total Blocks: &b" + gameMap.getTotalBlocks()));
+                    player.sendMessage(ColorHandler.getInstance().color("Total Chests: &b" + gameMap.getChests()));
+                    player.sendMessage(ColorHandler.getInstance().color("Total Workbenches: &b" + gameMap.getWorkbenches()));
+                    player.sendMessage(ColorHandler.getInstance().color("Total Enchantment Tables: &b" + gameMap.getEnchantTables()));
+                    player.sendMessage(ColorHandler.getInstance().color("Total Furnaces: &b" + gameMap.getFurnaces()));
                     return true;
                 }
                 case "downloadloadteleport", "dlltp" -> {
                     SGMap finalGameMap = gameMap;
                     mapManager.setMapBeingEdited(finalGameMap);
-                    player.sendMessage(ColorUtils.color("Please wait, setting up the map, then teleporting you to " + finalGameMap.getName() + "."));
+                    player.sendMessage(ColorHandler.getInstance().color("Please wait, setting up the map, then teleporting you to " + finalGameMap.getName() + "."));
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                         if (!finalGameMap.download(plugin)) {
-                            player.sendMessage(ColorUtils.color("Failed to download the map " + finalGameMap.getName()));
+                            player.sendMessage(ColorHandler.getInstance().color("Failed to download the map " + finalGameMap.getName()));
                             return;
                         }
 
@@ -345,7 +345,7 @@ public class SGMapCommand implements CommandExecutor {
                         finalGameMap.copyFolder(plugin, "", false);
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             if (!finalGameMap.load(plugin)) {
-                                sender.sendMessage(ColorUtils.color("Could not load the map " + finalGameMap.getName() + ". Please report as a bug."));
+                                sender.sendMessage(ColorHandler.getInstance().color("Could not load the map " + finalGameMap.getName() + ". Please report as a bug."));
                                 return;
                             }
 
@@ -356,7 +356,7 @@ public class SGMapCommand implements CommandExecutor {
                                 spawn = finalGameMap.getWorld().getSpawnLocation();
                             }
                             player.teleport(spawn);
-                            player.sendMessage(ColorUtils.color("Successfully setup and teleported you to the map " + finalGameMap.getName()));
+                            player.sendMessage(ColorHandler.getInstance().color("Successfully setup and teleported you to the map " + finalGameMap.getName()));
                         });
                     });
                     return true;
@@ -370,7 +370,7 @@ public class SGMapCommand implements CommandExecutor {
                 @Override
                 public void run() {
                     mapManager.saveMap(finalGameMap);
-                    sender.sendMessage(ColorUtils.color("The map has been saved to the database."));
+                    sender.sendMessage(ColorHandler.getInstance().color("The map has been saved to the database."));
                 }
             }.runTaskAsynchronously(plugin);
             return true;

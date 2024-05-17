@@ -1,6 +1,6 @@
 package com.thenexusreborn.gamemaps.tasks;
 
-import com.stardevllc.starcore.color.ColorUtils;
+import com.stardevllc.starcore.color.ColorHandler;
 import com.stardevllc.starcore.utils.Cuboid;
 import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.gamemaps.model.SGMap;
@@ -49,7 +49,7 @@ public class AnalyzeThread implements Runnable {
         }
 
         Bukkit.getServer().getScheduler().runTask(plugin, new BlockAnalyzeThread(this, new ArrayList<>(blocks)));
-        player.sendMessage(ColorUtils.color("Analysis Complete. Use /sg map analysis to view results."));
+        player.sendMessage(ColorHandler.getInstance().color("Analysis Complete. Use /sg map analysis to view results."));
     }
 
     public JavaPlugin getPlugin() {
