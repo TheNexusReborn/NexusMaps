@@ -1,9 +1,9 @@
 package com.thenexusreborn.gamemaps.model;
 
+import com.stardevllc.helper.FileHelper;
 import com.stardevllc.starcore.utils.Cuboid;
 import com.stardevllc.starcore.utils.Position;
 import com.stardevllc.starcore.utils.ServerProperties;
-import com.stardevllc.starlib.helper.FileHelper;
 import com.thenexusreborn.api.sql.annotations.column.ColumnCodec;
 import com.thenexusreborn.api.sql.annotations.column.ColumnIgnored;
 import com.thenexusreborn.api.sql.annotations.column.ColumnType;
