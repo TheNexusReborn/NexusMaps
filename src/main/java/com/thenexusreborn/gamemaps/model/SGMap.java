@@ -3,7 +3,8 @@ package com.thenexusreborn.gamemaps.model;
 import com.stardevllc.helper.FileHelper;
 import com.stardevllc.starcore.utils.Cuboid;
 import com.stardevllc.starcore.utils.Position;
-import com.stardevllc.starcore.utils.ServerProperties;
+import com.thenexusreborn.api.NexusAPI;
+import com.thenexusreborn.api.player.NexusPlayer;
 import com.thenexusreborn.api.sql.annotations.column.ColumnCodec;
 import com.thenexusreborn.api.sql.annotations.column.ColumnIgnored;
 import com.thenexusreborn.api.sql.annotations.column.ColumnType;
@@ -101,7 +102,9 @@ public class SGMap {
     
     public Location getCenterLocation() {
         if (this.world != null) {
-            return getCenter().toLocation(this.world);
+            if (this.center != null) {
+                return getCenter().toLocation(this.world);
+            }
         }
         
         return null;
@@ -145,10 +148,11 @@ public class SGMap {
                 Files.deleteIfExists(downloadedZip);
                 downloadedZip = null;
             }
-            
+
             if (this.world != null) {
                 for (Player player : world.getPlayers()) {
-                    player.teleport(Bukkit.getWorld(ServerProperties.getLevelName()).getSpawnLocation());
+                    NexusPlayer nexusPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(player.getUniqueId());
+                    nexusPlayer.getServer().teleportToSpawn(player.getUniqueId());
                 }
                 
                 boolean success = Bukkit.unloadWorld(world, false);
