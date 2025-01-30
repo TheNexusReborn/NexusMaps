@@ -35,6 +35,7 @@ public class YamlMapManager extends MapManager {
             if (file.getName().contains(".yml")) {
                 FileConfiguration config = YamlConfiguration.loadConfiguration(file);
                 SGMap sgMap = SGMap.loadFromYaml(config);
+                lastId = Math.max(this.lastId, sgMap.getId());
                 gameMaps.add(sgMap);
             }
         }
