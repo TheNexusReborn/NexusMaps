@@ -53,3 +53,4 @@ publishing {
 }
 
 tasks.compileJava.dependsOn(clean)
+tasks.build.finalizedBy(publishToMavenLocal)
