@@ -31,6 +31,5 @@ public class BlockAnalyzeThread implements Runnable {
                 analyzeThread.incrementTotalBlocks();
             }
         }
-        
     }
 }
