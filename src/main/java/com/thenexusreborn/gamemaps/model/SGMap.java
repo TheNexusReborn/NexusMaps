@@ -152,7 +152,9 @@ public class SGMap {
             if (this.world != null) {
                 for (Player player : world.getPlayers()) {
                     NexusPlayer nexusPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(player.getUniqueId());
-                    nexusPlayer.getServer().teleportToSpawn(player.getUniqueId());
+                    if (nexusPlayer != null) {
+                        nexusPlayer.getServer().teleportToSpawn(player.getUniqueId());
+                    }
                 }
                 
                 boolean success = Bukkit.unloadWorld(world, false);
