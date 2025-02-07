@@ -31,7 +31,7 @@ dependencies {
 }
 
 group = 'com.thenexusreborn'
-version = '1.1.1-ALPHA'
+version = '1.1.2-ALPHA'
 description = 'NexusMaps'
 
 java {
