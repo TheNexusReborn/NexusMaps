@@ -202,7 +202,7 @@ public class SGMapCommand implements CommandExecutor {
                     gameMap.setSpawn(position, mapSpawn);
                     Location blockLocation = mapSpawn.toBlockLocation(gameMap.getWorld());
                     player.teleport(location.clone().add(0, 1, 0));
-                    blockLocation.getBlock().setType(Material.AIR);
+                    blockLocation.getBlock().setType(Material.BEDROCK);
                     sender.sendMessage(StarColors.color("&eYou set the spawn at position &b" + position + " &eto your location in the map &b" + gameMap.getName()));
                 }
                 case "setcenter", "sc" -> {
