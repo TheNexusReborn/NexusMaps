@@ -258,6 +258,10 @@ public class SGMap {
         return new LinkedList<>(spawns);
     }
     
+    public void clearSpawns() {
+        this.spawns.clear();
+    }
+    
     public int getBorderDistance() {
         return borderDistance;
     }

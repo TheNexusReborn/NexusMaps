@@ -172,6 +172,12 @@ public class SGMapCommand implements CommandExecutor {
                     blockLocation.getBlock().setType(Material.BEDROCK);
                     sender.sendMessage(StarColors.color("&eYou added a spawn with index &b" + (position + 1) + " &eto the map &b" + gameMap.getName()));
                 }
+                case "clearspawns" -> {
+                    for (MapSpawn spawn : gameMap.getSpawns()) {
+                        spawn.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
+                        gameMap.clearSpawns();
+                    }
+                }
                 case "setspawn", "sp" -> {
                     if (!(args.length > argIndex)) {
                         sender.sendMessage(StarColors.color("&cYou must provide an index for the spawn."));
