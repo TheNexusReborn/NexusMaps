@@ -31,8 +31,6 @@ public class AnalyzeThread extends BukkitRunnable {
 
     private final DecimalFormat format = new DecimalFormat("#,###,###,###");
 
-    private long max;
-
     private int x, z;
     
     private Map<Material, Integer> materialCounts = new HashMap<>();
@@ -57,7 +55,6 @@ public class AnalyzeThread extends BukkitRunnable {
     }
 
     public void run() {
-        long start = System.currentTimeMillis();
         for (int i = 0; i < 100; i++) {
             for (int y = 0; y < 256; y++) {
                 Block block = gameMap.getWorld().getBlockAt(x, y, z);
@@ -99,10 +96,6 @@ public class AnalyzeThread extends BukkitRunnable {
                 x = cuboid.getXMin();
             }
         }
-
-        long end = System.currentTimeMillis();
-
-        this.max = Math.max(this.max, end - start);
     }
 
     public JavaPlugin getPlugin() {
@@ -157,6 +150,5 @@ public class AnalyzeThread extends BukkitRunnable {
         this.gameMap.setEnchantTables(this.enchantTables);
         this.gameMap.setWorkbenches(this.workbenches);
         this.gameMap.setFurnaces(this.furnaces);
-        this.gameMap.setMax(this.max);
     }
 }
