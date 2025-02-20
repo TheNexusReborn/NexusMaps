@@ -334,13 +334,14 @@ public class SGMapCommand implements CommandExecutor {
                     return true;
                 }
                 case "analyze" -> {
+                    player.sendMessage(StarColors.color("&eStarting map anaylsis for &b" + gameMap.getName() + "&e..."));
                     gameMap.setChests(0);
                     gameMap.setEnchantTables(0);
                     gameMap.setWorkbenches(0);
                     gameMap.setTotalBlocks(0);
                     gameMap.setFurnaces(0);
-                    player.sendMessage(StarColors.color("&ePerforming map analysis on " + gameMap.getName()));
-                    Bukkit.getServer().getScheduler().runTaskLaterAsynchronously(plugin, new AnalyzeThread(plugin, gameMap, player), 1L);
+                    
+                    new AnalyzeThread(plugin, gameMap, player).runTaskTimer(plugin, 1L, 1L);
                     return true;
                 }
                 case "analysis" -> {

@@ -3,24 +3,39 @@ package com.thenexusreborn.gamemaps.tasks;
 import com.stardevllc.colors.StarColors;
 import com.stardevllc.starcore.utils.Cuboid;
 import com.stardevllc.starcore.utils.Position;
+import com.thenexusreborn.api.NexusAPI;
+import com.thenexusreborn.api.player.NexusPlayer;
 import com.thenexusreborn.gamemaps.model.SGMap;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 
-public class AnalyzeThread implements Runnable {
+public class AnalyzeThread extends BukkitRunnable {
 
     private JavaPlugin plugin;
     private SGMap gameMap;
     private Player player;
     private Cuboid cuboid;
 
-    private AtomicInteger totalBlocks = new AtomicInteger(), chests = new AtomicInteger(), enchantTables = new AtomicInteger(), workbenches = new AtomicInteger(), furnaces = new AtomicInteger();
+    private NexusPlayer nexusPlayer;
+
+    private int totalBlocks, chests, enchantTables, workbenches, furnaces;
+    private int totalProcessed;
+
+    private final DecimalFormat format = new DecimalFormat("#,###,###,###");
+
+    private long max;
+
+    private int x, z;
+    
+    private Map<Material, Integer> materialCounts = new HashMap<>();
 
     public AnalyzeThread(JavaPlugin plugin, SGMap map, Player player) {
         this.plugin = plugin;
@@ -28,28 +43,66 @@ public class AnalyzeThread implements Runnable {
         this.player = player;
         Position center = gameMap.getCenter();
         int borderDistance = gameMap.getBorderDistance();
-        Location min = new Location(gameMap.getWorld(), center.getX() - borderDistance, 0, center.getZ() - borderDistance);
-        Location max = new Location(gameMap.getWorld(), center.getX() + borderDistance, 256, center.getZ() + borderDistance);
+        
+        int halfBorderDistance = borderDistance / 2;
+        
+        Location min = new Location(gameMap.getWorld(), center.getX() - halfBorderDistance, 0, center.getZ() - halfBorderDistance);
+        Location max = new Location(gameMap.getWorld(), center.getX() + halfBorderDistance, 256, center.getZ() + halfBorderDistance);
+
         this.cuboid = new Cuboid(min, max);
+
+        this.x = cuboid.getXMin();
+        this.z = cuboid.getZMin();
+        nexusPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(this.player.getUniqueId());
     }
 
     public void run() {
-        List<Position> blocks = new ArrayList<>();
-        
-        for (int x = cuboid.getXMin(); x <= cuboid.getXMax(); x++) {
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 100; i++) {
             for (int y = 0; y < 256; y++) {
-                for (int z = cuboid.getZMin(); z <= cuboid.getZMax(); z++) {
-                    blocks.add(new Position(x, y, z));
-                    if (blocks.size() == 50) {
-                        Bukkit.getServer().getScheduler().runTaskLater(plugin, new BlockAnalyzeThread(this, new ArrayList<>(blocks)), 1L);
-                        blocks.clear();
-                    }
+                Block block = gameMap.getWorld().getBlockAt(x, y, z);
+                nexusPlayer.setActionBar(() -> "X: " + this.x + " Z: " + this.z + " P: " + format.format(totalProcessed));
+                Material type = block.getType();
+                
+                if (this.materialCounts.containsKey(type)) {
+                    this.materialCounts.put(type, this.materialCounts.get(type) + 1);
+                } else {
+                    this.materialCounts.put(type, 1);
                 }
+                
+                if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
+                    incrementChests();
+                } else if (type == Material.ENCHANTMENT_TABLE) {
+                    incrementEnchantTables();
+                } else if (type == Material.WORKBENCH) {
+                    incrementWorkbenches();
+                } else if (type == Material.FURNACE || type == Material.BURNING_FURNACE) {
+                    incrementFurnaces();
+                }
+
+                if (block.getType() != Material.AIR) {
+                    incrementTotalBlocks();
+                }
+                
+                totalProcessed++;
+            }
+
+            if (x >= cuboid.getXMax() && z >= cuboid.getZMax()) {
+                player.sendMessage(StarColors.color("&eAnalysis Complete. Use /sgmap analysis to view results."));
+//                this.materialCounts.forEach((material, count) -> System.out.println(material + ": " + count));
+                cancel();
+                return;
+            } else if (x < cuboid.getXMax()) {
+                x++;
+            } else {
+                z++;
+                x = cuboid.getXMin();
             }
         }
 
-        Bukkit.getServer().getScheduler().runTask(plugin, new BlockAnalyzeThread(this, new ArrayList<>(blocks)));
-        player.sendMessage(StarColors.color("Analysis Complete. Use /sg map analysis to view results."));
+        long end = System.currentTimeMillis();
+
+        this.max = Math.max(this.max, end - start);
     }
 
     public JavaPlugin getPlugin() {
@@ -65,43 +118,45 @@ public class AnalyzeThread implements Runnable {
     }
 
     public void incrementTotalBlocks() {
-        this.totalBlocks.getAndIncrement();
+        this.totalBlocks++;
         updateGameMapValues();
     }
 
     public void incrementChests() {
-        this.chests.getAndIncrement();
+        this.chests++;
         updateGameMapValues();
     }
 
     public void incrementEnchantTables() {
-        this.enchantTables.getAndIncrement();
+        this.enchantTables++;
         updateGameMapValues();
     }
 
     public void incrementWorkbenches() {
-        this.workbenches.getAndIncrement();
+        this.workbenches++;
         updateGameMapValues();
     }
 
     public void incrementFurnaces() {
-        this.furnaces.getAndIncrement();
+        this.furnaces++;
         updateGameMapValues();
     }
 
     public void setValues(int totalBlocks, int chests, int enchantTables, int workbenches, int furnaces) {
-        this.totalBlocks.getAndAdd(totalBlocks);
-        this.chests.getAndAdd(chests);
-        this.enchantTables.getAndAdd(enchantTables);
-        this.workbenches.getAndAdd(workbenches);
-        this.furnaces.getAndAdd(furnaces);
+        this.totalBlocks = totalBlocks;
+        this.chests = chests;
+        this.enchantTables = enchantTables;
+        this.workbenches = workbenches;
+        this.furnaces = furnaces;
+        updateGameMapValues();
     }
-    
+
     public void updateGameMapValues() {
-        this.gameMap.setTotalBlocks(this.totalBlocks.get());
-        this.gameMap.setChests(this.chests.get());
-        this.gameMap.setEnchantTables(this.enchantTables.get());
-        this.gameMap.setWorkbenches(this.workbenches.get());
-        this.gameMap.setFurnaces(this.furnaces.get());
+        this.gameMap.setTotalBlocks(this.totalBlocks);
+        this.gameMap.setChests(this.chests);
+        this.gameMap.setEnchantTables(this.enchantTables);
+        this.gameMap.setWorkbenches(this.workbenches);
+        this.gameMap.setFurnaces(this.furnaces);
+        this.gameMap.setMax(this.max);
     }
 }
