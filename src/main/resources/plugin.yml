@@ -1,6 +1,6 @@
 main: com.thenexusreborn.gamemaps.NexusGameMaps
 name: ${name}
 version: ${version}
-depend: [NexusCore]
+depend: [NexusCore, WorldEdit]
 author: Firestar311
     
