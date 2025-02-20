@@ -599,6 +599,14 @@ public class SGMap {
 
         map.setActive(config.getBoolean("active"));
         
+        if (config.contains("stats")) {
+            map.setChests(config.getInt("stats.chests"));
+            map.setEnchantTables(config.getInt("stats.enchanttables"));
+            map.setWorkbenches(config.getInt("stats.workbenches"));
+            map.setFurnaces(config.getInt("stats.furnaces"));
+            map.setTotalBlocks(config.getInt("stats.totalblocks"));
+        }
+        
         return map;
     }
 
@@ -649,5 +657,11 @@ public class SGMap {
                 config.set(path + "z", spawn.getZ());
             }
         }
+        
+        config.set("stats.chests", this.chests);
+        config.set("stats.enchanttables", this.enchantTables);
+        config.set("stats.workbenches", this.workbenches);
+        config.set("stats.furnaces", this.furnaces);
+        config.set("stats.totalblocks", this.totalBlocks);
     }
 }
