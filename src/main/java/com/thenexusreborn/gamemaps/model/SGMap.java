@@ -729,4 +729,39 @@ public class SGMap {
         config.set("stats.furnaces", this.furnaces);
         config.set("stats.totalblocks", this.totalBlocks);
     }
+    
+    public void copyFrom(SGMap other) {
+        this.url = other.url;
+        this.name = other.name;
+        this.prefix = other.prefix;
+
+        this.spawns.clear();
+        
+        for (MapSpawn spawn : other.spawns) {
+            addSpawn(spawn.clone());
+        }
+        
+        this.creators.clear();
+        this.creators.addAll(other.creators);
+        
+        this.active = other.active;
+        this.swagShack = other.swagShack == null ? null : other.swagShack.clone();
+        this.spawnCenter = other.spawnCenter == null ? null : other.spawnCenter.clone();
+
+        this.arenaMinimum = other.arenaMinimum == null ? null : other.arenaMinimum.clone();
+        this.arenaMaximum = other.arenaMaximum == null ? null : other.arenaMaximum.clone();
+        this.arenaCenter = other.arenaCenter == null ? null : other.arenaCenter.clone();
+        this.arenaBorderLength = other.arenaBorderLength;
+
+        this.deathmatchMinimum = other.deathmatchMinimum == null ? null : other.deathmatchMinimum.clone();
+        this.deathmatchMaximum = other.deathmatchMaximum == null ? null : other.deathmatchMaximum.clone();
+        this.deathmatchCenter = other.deathmatchCenter == null ? null : other.deathmatchCenter.clone();
+        this.deathmatchBorderLength = other.deathmatchBorderLength;
+        
+        this.chests = other.chests;
+        this.enchantTables = other.enchantTables;
+        this.workbenches = other.workbenches;
+        this.furnaces = other.furnaces;
+        this.totalBlocks = other.totalBlocks;
+    }
 }
