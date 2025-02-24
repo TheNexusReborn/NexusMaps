@@ -6,11 +6,16 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import com.stardevllc.colors.StarColors;
+import com.stardevllc.itembuilder.XMaterial;
 import com.stardevllc.starcore.utils.Position;
+import com.stardevllc.staritems.model.CustomItem;
+import com.thenexusreborn.gamemaps.items.CmdItem;
 import com.thenexusreborn.gamemaps.model.MapSpawn;
 import com.thenexusreborn.gamemaps.model.SGMap;
 import com.thenexusreborn.gamemaps.tasks.AnalyzeThread;
+import com.thenexusreborn.nexuscore.util.MsgType;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,6 +23,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -155,17 +162,11 @@ public class SGMapCommand implements CommandExecutor {
                     return true;
                 }
                 case "teleport", "tp" -> {
-                    Location spawn;
                     if (gameMap.getWorld() == null) {
                         sender.sendMessage(StarColors.color("&cThat map is not loaded. Please load before teleporting."));
                         return true;
                     }
-                    if (gameMap.getCenter() != null) {
-                        spawn = gameMap.getCenter().toLocation(gameMap.getWorld());
-                    } else {
-                        spawn = gameMap.getWorld().getSpawnLocation();
-                    }
-                    player.teleport(spawn);
+                    teleportToMap(player, gameMap);
                     player.sendMessage(StarColors.color("&eTeleported to the map " + gameMap.getName()));
                     return true;
                 }
@@ -432,27 +433,27 @@ public class SGMapCommand implements CommandExecutor {
                 case "downloadloadteleport", "dlltp" -> {
                     SGMap finalGameMap = gameMap;
                     mapManager.setMapBeingEdited(finalGameMap);
-                    player.sendMessage(StarColors.color("&ePlease wait, setting up the map, then teleporting you to &b" + finalGameMap.getName() + "&e."));
+                    player.sendMessage(StarColors.color("&6&l>> &ePlease wait..."));
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                        String name = finalGameMap.getName();
                         if (!finalGameMap.download(plugin)) {
-                            player.sendMessage(StarColors.color("&cFailed to download the map " + finalGameMap.getName()));
+                            player.sendMessage(StarColors.color("&4&l>> &cFailed to download the map " + name));
                             return;
                         }
+                        
+                        player.sendMessage(StarColors.color("&2&l>> &aDownloaded the map &b" + name));
 
                         finalGameMap.unzip(plugin);
+                        player.sendMessage(StarColors.color("&2&l>> &aUnzipped the map &b" + name));
                         finalGameMap.copyFolder(plugin, "", false);
+                        player.sendMessage(StarColors.color("&2&l>> &aCopied the map files for &b" + name));
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             if (!finalGameMap.load(plugin)) {
-                                sender.sendMessage(StarColors.color("&cCould not load the map " + finalGameMap.getName() + ". Please report as a bug."));
+                                sender.sendMessage(StarColors.color("&cCould not load the map " + name + ". Please report as a bug."));
                                 return;
                             }
-
-                            Location spawn;
-                            if (finalGameMap.getCenter() != null) {
-                                spawn = finalGameMap.getCenter().toLocation(finalGameMap.getWorld());
-                            } else {
-                                spawn = finalGameMap.getWorld().getSpawnLocation();
-                            }
+                            
+                            player.sendMessage(StarColors.color("&2&l>> &aLoaded the map &b" + name + " &aas a world"));
 
                             if (finalGameMap.getCenterLocation() != null) {
                                 finalGameMap.getCenterLocation().getBlock().setType(Material.BEDROCK);
@@ -468,8 +469,8 @@ public class SGMapCommand implements CommandExecutor {
                                 }
                             }
                             
-                            player.teleport(spawn);
-                            player.sendMessage(StarColors.color("&eSuccessfully setup and teleported you to the map " + finalGameMap.getName()));
+                            teleportToMap(player, finalGameMap);
+                            player.sendMessage(StarColors.color("&eSuccessfully setup and teleported you to the map " + name));
                         });
                     });
                     return true;
@@ -489,6 +490,31 @@ public class SGMapCommand implements CommandExecutor {
             return true;
         }
         return true;
+    }
+    
+    public static void teleportToMap(Player player, SGMap sgMap) {
+        Location spawn;
+        if (sgMap.getSpawnCenter() != null) {
+            spawn = sgMap.getSpawnCenter().toLocation(sgMap.getWorld());
+        } else {
+            spawn = sgMap.getWorld().getSpawnLocation();
+        }
+
+        player.teleport(spawn);
+        player.setGameMode(GameMode.CREATIVE);
+        
+        PlayerInventory inv = player.getInventory();
+        inv.clear();
+        
+        inv.addItem(new ItemStack(Material.WOOD_AXE)); //This is the world edit wand
+        inv.addItem(SAVE_ITEM.toItemStack());
+        inv.addItem(SET_BOUNDS_ARENA_ITEM.toItemStack());
+        inv.addItem(SET_BOUNDS_DEATHMATCH_ITEM.toItemStack());
+        inv.addItem(ADD_SPAWN_ITEM.toItemStack());
+        inv.addItem(SET_SPAWN_CENTER_ITEM.toItemStack());
+        inv.addItem(SET_SWAG_SHACK_ITEM.toItemStack());
+        inv.addItem(VIEW_ARENA_BORDER.toItemStack());
+        inv.addItem(VIEW_DEATHMATCH_BORDER.toItemStack());
     }
 
     public static String getMapNameFromCommand(String[] args, int startIndex) {
