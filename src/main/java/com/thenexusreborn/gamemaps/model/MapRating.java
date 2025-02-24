@@ -1,11 +1,20 @@
 package com.thenexusreborn.gamemaps.model;
 
 import com.thenexusreborn.api.sql.annotations.table.TableName;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @TableName("sgmapratings")
-public class MapRating {
+public class MapRating implements ConfigurationSerializable {
+    
+    static {
+        ConfigurationSerialization.registerClass(MapRating.class);
+    }
+    
     private long id;
     private String mapName;
     private UUID player;
@@ -21,6 +30,19 @@ public class MapRating {
         this.timestamp = timestamp;
     }
     
+    public MapRating(Map<String, Object> serialized) {
+        this.id = (long) ((int) serialized.get("id"));
+        this.mapName = (String) serialized.get("mapName");
+        this.player = UUID.fromString((String) serialized.get("player"));
+        this.rating = (int) serialized.get("rating");
+        this.timestamp = (long) ((int) serialized.get("timestamp"));
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        return new HashMap<>(Map.of("id", this.id, "mapName", this.mapName, "player", this.player.toString(), "rating", this.rating, "timestamp", this.timestamp));
+    }
+
     public long getId() {
         return id;
     }
