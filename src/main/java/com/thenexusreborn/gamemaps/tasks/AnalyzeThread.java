@@ -1,12 +1,11 @@
 package com.thenexusreborn.gamemaps.tasks;
 
-import com.stardevllc.colors.StarColors;
-import com.stardevllc.starcore.utils.Cuboid;
-import com.stardevllc.starcore.utils.Position;
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.regions.CuboidRegion;
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.player.NexusPlayer;
 import com.thenexusreborn.gamemaps.model.SGMap;
-import org.bukkit.Location;
+import com.thenexusreborn.nexuscore.util.MsgType;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -22,7 +21,6 @@ public class AnalyzeThread extends BukkitRunnable {
     private JavaPlugin plugin;
     private SGMap gameMap;
     private Player player;
-    private Cuboid cuboid;
 
     private NexusPlayer nexusPlayer;
 
@@ -31,71 +29,49 @@ public class AnalyzeThread extends BukkitRunnable {
 
     private final DecimalFormat format = new DecimalFormat("#,###,###,###");
 
-    private int x, z;
-    
     private Map<Material, Integer> materialCounts = new HashMap<>();
+    
+    private CuboidRegion region;
 
     public AnalyzeThread(JavaPlugin plugin, SGMap map, Player player) {
         this.plugin = plugin;
         this.gameMap = map;
         this.player = player;
-        Position center = gameMap.getCenter();
-        int borderDistance = gameMap.getBorderDistance();
         
-        int halfBorderDistance = borderDistance / 2;
-        
-        Location min = new Location(gameMap.getWorld(), center.getX() - halfBorderDistance, 0, center.getZ() - halfBorderDistance);
-        Location max = new Location(gameMap.getWorld(), center.getX() + halfBorderDistance, 256, center.getZ() + halfBorderDistance);
+        region = map.getArenaRegion();
 
-        this.cuboid = new Cuboid(min, max);
-
-        this.x = cuboid.getXMin();
-        this.z = cuboid.getZMin();
         nexusPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(this.player.getUniqueId());
     }
 
     public void run() {
-        for (int i = 0; i < 100; i++) {
-            for (int y = 0; y < 256; y++) {
-                Block block = gameMap.getWorld().getBlockAt(x, y, z);
-                nexusPlayer.setActionBar(() -> "X: " + this.x + " Z: " + this.z + " P: " + format.format(totalProcessed));
-                Material type = block.getType();
-                
-                if (this.materialCounts.containsKey(type)) {
-                    this.materialCounts.put(type, this.materialCounts.get(type) + 1);
-                } else {
-                    this.materialCounts.put(type, 1);
-                }
-                
-                if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
-                    incrementChests();
-                } else if (type == Material.ENCHANTMENT_TABLE) {
-                    incrementEnchantTables();
-                } else if (type == Material.WORKBENCH) {
-                    incrementWorkbenches();
-                } else if (type == Material.FURNACE || type == Material.BURNING_FURNACE) {
-                    incrementFurnaces();
-                }
-
-                if (block.getType() != Material.AIR) {
-                    incrementTotalBlocks();
-                }
-                
-                totalProcessed++;
-            }
-
-            if (x >= cuboid.getXMax() && z >= cuboid.getZMax()) {
-                player.sendMessage(StarColors.color("&eAnalysis Complete. Use /sgmap analysis to view results."));
-//                this.materialCounts.forEach((material, count) -> System.out.println(material + ": " + count));
-                cancel();
-                return;
-            } else if (x < cuboid.getXMax()) {
-                x++;
+        for (BlockVector vector : region) {
+            Block block = gameMap.getWorld().getBlockAt(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+            nexusPlayer.setActionBar(() -> "X: " + block.getX() + " Z: " + block.getZ() + " P: " + format.format(totalProcessed));
+            
+            Material type = block.getType();
+            
+            if (this.materialCounts.containsKey(type)) {
+                this.materialCounts.put(type, this.materialCounts.get(type) + 1);
             } else {
-                z++;
-                x = cuboid.getXMin();
+                this.materialCounts.put(type, 1);
             }
+            
+            if (type != Material.AIR) {
+                totalBlocks++;
+            }
+            
+            totalProcessed++;
         }
+        
+        this.chests = this.materialCounts.getOrDefault(Material.CHEST, 0) + this.materialCounts.getOrDefault(Material.TRAPPED_CHEST, 0);
+        this.enchantTables = this.materialCounts.getOrDefault(Material.ENCHANTMENT_TABLE, 0);
+        this.workbenches = this.materialCounts.getOrDefault(Material.WORKBENCH, 0);
+        this.furnaces = this.materialCounts.getOrDefault(Material.FURNACE, 0) + this.materialCounts.getOrDefault(Material.BURNING_FURNACE, 0);
+        
+        updateGameMapValues();
+        
+        MsgType.INFO.send(player, "Map analysis complete for %v.", gameMap.getName());
+        MsgType.INFO.send(player, " Use %v to view results", "/sgmap analysis");
     }
 
     public JavaPlugin getPlugin() {
@@ -104,10 +80,6 @@ public class AnalyzeThread extends BukkitRunnable {
 
     public SGMap getGameMap() {
         return gameMap;
-    }
-
-    public Cuboid getCuboid() {
-        return cuboid;
     }
 
     public void incrementTotalBlocks() {
