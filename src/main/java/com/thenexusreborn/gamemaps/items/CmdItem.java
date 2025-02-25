@@ -10,7 +10,8 @@ import org.bukkit.event.block.Action;
 
 public class CmdItem extends CustomItem {
     public CmdItem(String name, XMaterial material, String command) {
-        super(NexusGameMaps.getPlugin(NexusGameMaps.class), "map" + name.toLowerCase().replace(" ", "") + "item", ItemBuilder.of(material).displayName("&e&l" + name));
+        super(NexusGameMaps.getPlugin(NexusGameMaps.class), "map" + name.toLowerCase().replace(" ", "") + "item", ItemBuilder.of(material).displayName("&e&l" + name)
+                .addLoreLine("&7This item runs the command &e/" + command));
 
         StarItems.getPlugin(StarItems.class).getItemRegistry().register(this);
         
