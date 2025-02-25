@@ -63,7 +63,7 @@ public class SGMapCommand implements CommandExecutor {
         String mapSubCommand = args[0].toLowerCase();
 
         if (!mapManager.isEditMode()) {
-            if (!(args.length > 1 && (args[1].equalsIgnoreCase("setactive") || args[1].equalsIgnoreCase("sa")))) {
+            if (!(mapSubCommand.equalsIgnoreCase("setactive") || mapSubCommand.equalsIgnoreCase("sa") || mapSubCommand.equalsIgnoreCase("validate"))) {
                 sender.sendMessage(StarColors.color("&cYou can only use that command when map editing mode is active."));
                 return true;  
             }
@@ -122,6 +122,36 @@ public class SGMapCommand implements CommandExecutor {
             }
 
             switch (mapSubCommand) {
+                case "validate" -> {
+                    StarColors.coloredMessage(player, "&6&l>> &e&lSettings for map &b&l" + gameMap.getName());
+                    StarColors.coloredMessage(player, "&6&l>> &dKey: &aGreen = Good&d, &cRed = Invalid (Required)&d, &eYellow = Invalid (Optional)");
+                    StarColors.coloredMessage(player, " &6&l> &7Status: " + (gameMap.isActive() ? "&a&lACTIVE" : "&c&lINACTIVE") + "  " + (gameMap.isValid() ? "&a&lVALID" : "&c&lINVALID"));
+                    String url = gameMap.getUrl();
+                    String urlMsg = url == null || url.isBlank() ? "&cNot Set" : "&a" + url;
+                    StarColors.coloredMessage(player, " &6&l> &7URL: " + urlMsg);
+                    StarColors.coloredMessage(player, " &6&l> &7Spawns: " + (gameMap.getSpawns().size() < 2 ? "&c" + gameMap.getSpawns().size() + "/2" : "&a" + gameMap.getSpawns().size()));
+                    StringBuilder creators = new StringBuilder();
+                    if (gameMap.getCreators().isEmpty()) {
+                        creators.append("&cNone");
+                    } else {
+                        for (String creator : gameMap.getCreators()) {
+                            creators.append("&a").append(creator).append("&7, ");
+                        }
+                        
+                        creators.delete(creators.length() - 5, creators.length());
+                    }
+                    
+                    StarColors.coloredMessage(player, " &6&l> &7Creators: " + creators);
+                    StarColors.coloredMessage(player, " &6&l> &7Spawn Center: " + validatePosition(gameMap.getSpawnCenter()));
+                    StarColors.coloredMessage(player, " &6&l> &7Arena Min: " + validatePosition(gameMap.getArenaMinimum()));
+                    StarColors.coloredMessage(player, " &6&l> &7Arena Max: " + validatePosition(gameMap.getArenaMaximum()));
+                    StarColors.coloredMessage(player, " &6&l> &7Arena Center: " + validatePosition(gameMap.getArenaCenter()));
+                    StarColors.coloredMessage(player, " &6&l> &7Deathmatch Min: " + validatePosition(gameMap.getDeathmatchMinimum()));
+                    StarColors.coloredMessage(player, " &6&l> &7Deathmatch Max: " + validatePosition(gameMap.getDeathmatchMaximum()));
+                    StarColors.coloredMessage(player, " &6&l> &7Deathmatch Center: " + validatePosition(gameMap.getDeathmatchCenter()));
+                    StarColors.coloredMessage(player, " &6&l> &7Swag Shack: " + validatePosition(gameMap.getSwagShack(), true));
+                    return true;
+                }
                 case "download", "dl" -> {
                     SGMap finalGameMap = gameMap;
                     mapManager.setMapBeingEdited(finalGameMap);
@@ -235,8 +265,6 @@ public class SGMapCommand implements CommandExecutor {
                     StarColors.coloredMessage(player, " &6&l> &7Maximum: &b" + maximum.getBlockX() + "&7, &b" + maximum.getBlockY() + "&7, &b" + maximum.getBlockZ());
                     StarColors.coloredMessage(player, " &6&l> &7Center: &b" + center.getBlockX() + "&7, &b" + center.getBlockY() + "&7, &b" + center.getBlockZ());
                     StarColors.coloredMessage(player, " &6&l> &7Border Side Length: &b" + sideLength);
-                    
-                    StarColors.coloredMessage(player, "&eYou set the bounds for &b" + type + " &eto your current WorldEdit selection");
                 }
                 case "addspawn", "as" -> {
                     Location location = player.getLocation();
@@ -269,7 +297,7 @@ public class SGMapCommand implements CommandExecutor {
 
                     MapSpawn existingSpawn = gameMap.getSpawns().get(position - 1);
                     if (existingSpawn != null) {
-                        existingSpawn.toBlockLocation(gameMap.getWorld()).add(0, 1, 0).getBlock().setType(Material.AIR);
+                        existingSpawn.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
                     }
 
                     Location location = player.getLocation();
@@ -280,6 +308,30 @@ public class SGMapCommand implements CommandExecutor {
                     blockLocation.getBlock().setType(Material.BEDROCK);
                     sender.sendMessage(StarColors.color("&eYou set the spawn at position &b" + position + " &eto your location in the map &b" + gameMap.getName()));
                 }
+                case "removespawn", "rs" -> {
+                    if (!(args.length > argIndex)) {
+                        sender.sendMessage(StarColors.color("&cYou must provide an index for the spawn."));
+                        return true;
+                    }
+
+                    int position;
+                    try {
+                        position = Integer.parseInt(args[argIndex]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(StarColors.color("&cYou provided an invalid number for the spawn index."));
+                        return true;
+                    }
+
+                    MapSpawn existingSpawn = gameMap.getSpawns().get(position - 1);
+                    if (existingSpawn == null) {
+                        MsgType.WARN.send(player, "A spawn with the index %v does not exist.", position);
+                        return true;
+                    }
+                    
+                    gameMap.removeSpawn(position - 1);
+                    MsgType.INFO.send(player, "You removed the spawn with the index %v", position);
+                    MsgType.INFO.send(player, "Spawns have been recalculated");
+                }
                 case "calculatespawns", "cs" -> {
                     if (!(args.length > argIndex)) {
                         sender.sendMessage(StarColors.color("&cYou must provide a type to search for."));
@@ -287,11 +339,22 @@ public class SGMapCommand implements CommandExecutor {
                     }
                     
                     Material spawnBlockType;
-                    try {
-                        spawnBlockType = Material.valueOf(args[argIndex].toUpperCase());
-                    } catch (IllegalArgumentException e) {
-                        MsgType.WARN.send(player, "Invalid material type %v", args[argIndex]);
-                        return true;
+                    
+                    if (args[argIndex].equalsIgnoreCase("hand")) {
+                        ItemStack handItem = player.getInventory().getItemInHand();
+                        if (handItem == null) {
+                            MsgType.WARN.send(player, "You are not holding a valid item");
+                            return true;
+                        }
+                        
+                        spawnBlockType = handItem.getType();
+                    } else {
+                        try {
+                            spawnBlockType = Material.valueOf(args[argIndex].toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            MsgType.WARN.send(player, "Invalid material type %v", args[argIndex]);
+                            return true;
+                        }
                     }
                     
                     Selection selection = WorldEditPlugin.getPlugin(WorldEditPlugin.class).getSelection(player);
@@ -334,7 +397,7 @@ public class SGMapCommand implements CommandExecutor {
                     location.getBlock().setType(Material.BEDROCK);
                     player.sendMessage(StarColors.color("&eYou set the center of the map &b" + gameMap.getName() + " &eto your current location."));
                 }
-                case "creators", "c" -> {
+                case "creators", "cr" -> {
                     if (!(args.length > argIndex)) {
                         sender.sendMessage(StarColors.color("&cYou must provide the creators."));
                         return true;
@@ -422,12 +485,12 @@ public class SGMapCommand implements CommandExecutor {
                     return true;
                 }
                 case "analysis" -> {
-                    player.sendMessage(StarColors.color("&eMap analysis results for &b" + gameMap.getName()));
-                    player.sendMessage(StarColors.color("&eTotal Blocks: &b" + gameMap.getTotalBlocks()));
-                    player.sendMessage(StarColors.color("&eTotal Chests: &b" + gameMap.getChests()));
-                    player.sendMessage(StarColors.color("&eTotal Workbenches: &b" + gameMap.getWorkbenches()));
-                    player.sendMessage(StarColors.color("&eTotal Enchantment Tables: &b" + gameMap.getEnchantTables()));
-                    player.sendMessage(StarColors.color("&eTotal Furnaces: &b" + gameMap.getFurnaces()));
+                    player.sendMessage(StarColors.color("&6&l>> &eMap analysis results for &b" + gameMap.getName()));
+                    player.sendMessage(StarColors.color(" &6&l> &7Total Blocks: &b" + gameMap.getTotalBlocks()));
+                    player.sendMessage(StarColors.color(" &6&l> &7Total Chests: &b" + gameMap.getChests()));
+                    player.sendMessage(StarColors.color(" &6&l> &7Workbenches: &b" + gameMap.getWorkbenches()));
+                    player.sendMessage(StarColors.color(" &6&l> &7Enchantment Tables: &b" + gameMap.getEnchantTables()));
+                    player.sendMessage(StarColors.color(" &6&l> &7Furnaces: &b" + gameMap.getFurnaces()));
                     return true;
                 }
                 case "downloadloadteleport", "dlltp" -> {
@@ -483,6 +546,10 @@ public class SGMapCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
+                    if (mapSubCommand.equalsIgnoreCase("validate")) {
+                        return;
+                    }
+                    
                     mapManager.saveMap(finalGameMap);
                     sender.sendMessage(StarColors.color("&7&oThe map has been saved to the database."));
                 }
@@ -523,5 +590,17 @@ public class SGMapCommand implements CommandExecutor {
             sb.append(args[i]).append(" ");
         }
         return sb.toString().trim();
+    }
+    
+    private static String validatePosition(Position position) {
+        return validatePosition(position, false);
+    }
+    
+    private static String validatePosition(Position position, boolean optional) {
+        if (position == null) {
+            return (optional ? "&e" : "&c") + "Not Set";
+        }
+        
+        return "&a" + position.getBlockX() + "&7, &a" + position.getBlockY() + "&7, &a" + position.getBlockZ();
     }
 }
