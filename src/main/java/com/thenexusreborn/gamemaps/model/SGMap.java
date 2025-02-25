@@ -86,8 +86,32 @@ public class SGMap {
     private SGMap() {
     }
 
-    public boolean isSetup() {
-        return true;
+    public boolean isValid() {
+        if (this.url == null || this.url.isEmpty()) {
+            return false;
+        }
+        
+        if (this.name == null || this.name.isEmpty()) {
+            return false;
+        }
+        
+        if (this.spawns.size() < 2) {
+            return false;
+        }
+        
+        if (this.creators.isEmpty()) {
+            return false;
+        }
+        
+        if (this.spawnCenter == null) {
+            return false;
+        }
+        
+        if (this.arenaMinimum == null || this.arenaMaximum == null || this.arenaCenter == null || this.arenaBorderLength == 0) {
+            return false;
+        }
+        
+        return !(this.deathmatchMinimum == null || this.deathmatchMaximum == null || this.deathmatchCenter == null || this.deathmatchBorderLength == 0);
     }
 
     public SGMap(String fileName, String name) {
@@ -475,7 +499,7 @@ public class SGMap {
 
     public void setActive(boolean active) {
         if (active) {
-            this.active = isSetup();
+            this.active = isValid();
         } else {
             this.active = false;
         }
@@ -635,7 +659,6 @@ public class SGMap {
         sgMap.setUrl(config.getString("url"));
         sgMap.setName(config.getString("name"));
         sgMap.setPrefix(config.getString("prefix"));
-        sgMap.setActive(config.getBoolean("active"));
 
         ConfigurationSection spawnsSection = config.getConfigurationSection("spawns");
         if (spawnsSection != null) {
@@ -674,6 +697,7 @@ public class SGMap {
         sgMap.setWorkbenches(config.getInt("stats.workbenches"));
         sgMap.setFurnaces(config.getInt("stats.furnaces"));
         sgMap.setTotalBlocks(config.getInt("stats.totalblocks"));
+        sgMap.setActive(config.getBoolean("active"));
 
         return sgMap;
     }
