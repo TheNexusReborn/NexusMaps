@@ -2,8 +2,7 @@ package com.thenexusreborn.gamemaps.tasks;
 
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.regions.CuboidRegion;
-import com.thenexusreborn.api.NexusAPI;
-import com.thenexusreborn.api.player.NexusPlayer;
+import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.gamemaps.model.SGMap;
 import com.thenexusreborn.nexuscore.util.MsgType;
 import org.bukkit.Material;
@@ -12,9 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class AnalyzeThread extends BukkitRunnable {
 
@@ -22,12 +22,8 @@ public class AnalyzeThread extends BukkitRunnable {
     private SGMap gameMap;
     private Player player;
 
-    private NexusPlayer nexusPlayer;
-
     private int totalBlocks, chests, enchantTables, workbenches, furnaces;
-    private int totalProcessed;
-
-    private final DecimalFormat format = new DecimalFormat("#,###,###,###");
+    private Set<Position> echestLocs = new HashSet<>();
 
     private Map<Material, Integer> materialCounts = new HashMap<>();
     
@@ -39,14 +35,11 @@ public class AnalyzeThread extends BukkitRunnable {
         this.player = player;
         
         region = map.getArenaRegion();
-
-        nexusPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(this.player.getUniqueId());
     }
 
     public void run() {
         for (BlockVector vector : region) {
             Block block = gameMap.getWorld().getBlockAt(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
-            nexusPlayer.setActionBar(() -> "X: " + block.getX() + " Z: " + block.getZ() + " P: " + format.format(totalProcessed));
             
             Material type = block.getType();
             
@@ -56,11 +49,13 @@ public class AnalyzeThread extends BukkitRunnable {
                 this.materialCounts.put(type, 1);
             }
             
+            if (type == Material.ENDER_CHEST) {
+                this.echestLocs.add(Position.fromLocation(block.getLocation()));
+            }
+            
             if (type != Material.AIR) {
                 totalBlocks++;
             }
-            
-            totalProcessed++;
         }
         
         this.chests = this.materialCounts.getOrDefault(Material.CHEST, 0) + this.materialCounts.getOrDefault(Material.TRAPPED_CHEST, 0);
@@ -122,5 +117,6 @@ public class AnalyzeThread extends BukkitRunnable {
         this.gameMap.setEnchantTables(this.enchantTables);
         this.gameMap.setWorkbenches(this.workbenches);
         this.gameMap.setFurnaces(this.furnaces);
+        this.gameMap.setEnderChests(this.echestLocs);
     }
 }

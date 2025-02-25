@@ -488,6 +488,7 @@ public class SGMapCommand implements CommandExecutor {
                     player.sendMessage(StarColors.color("&6&l>> &eMap analysis results for &b" + gameMap.getName()));
                     player.sendMessage(StarColors.color(" &6&l> &7Total Blocks: &b" + gameMap.getTotalBlocks()));
                     player.sendMessage(StarColors.color(" &6&l> &7Total Chests: &b" + gameMap.getChests()));
+                    player.sendMessage(StarColors.color(" &6&l> &7Total Ender Chests: &b" + gameMap.getEnderChestLocations().size()));
                     player.sendMessage(StarColors.color(" &6&l> &7Workbenches: &b" + gameMap.getWorkbenches()));
                     player.sendMessage(StarColors.color(" &6&l> &7Enchantment Tables: &b" + gameMap.getEnchantTables()));
                     player.sendMessage(StarColors.color(" &6&l> &7Furnaces: &b" + gameMap.getFurnaces()));

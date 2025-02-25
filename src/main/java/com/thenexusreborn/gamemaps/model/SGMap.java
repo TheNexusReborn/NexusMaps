@@ -47,6 +47,8 @@ public class SGMap {
     @ColumnIgnored
     private Map<UUID, MapRating> ratings = new HashMap<>();
     private Position swagShack;
+    
+    private Set<Position> enderChestLocations = new HashSet<>();
 
     //This is the center of the spawns for the arena, where spectators will spawn in
     //And where players will look at when teleported to a game spawn
@@ -230,6 +232,18 @@ public class SGMap {
         }
 
         return lastIndex + 1;
+    }
+
+    public Set<Position> getEnderChestLocations() {
+        return enderChestLocations;
+    }
+    
+    public void addEnderChestLocation(Position position) {
+        this.enderChestLocations.add(position);
+    }
+    
+    public void addEnderChestLocation(Location location) {
+        addEnderChestLocation(Position.fromLocation(location));
     }
 
     public void removeFromServer(JavaPlugin plugin) {
@@ -679,6 +693,13 @@ public class SGMap {
             }
         }
         
+        ConfigurationSection echestsSection = config.getConfigurationSection("enderchests");
+        if (echestsSection != null) {
+            for (String key : echestsSection.getKeys(false)) {
+                sgMap.addEnderChestLocation((Position) echestsSection.get(key));
+            }
+        }
+        
         sgMap.setSwagShack((Position) config.get("swagshack"));
         sgMap.setSpawnCenter((Position) config.get("spawncenter"));
         
@@ -733,6 +754,12 @@ public class SGMap {
         for (MapRating rating : this.ratings.values()) {
             config.set("ratings." + rating.getPlayer().toString(), rating);
         }
+
+        int echestIndex = 0;
+        for (Position echestLoc : this.enderChestLocations) {
+            config.set("enderchests." + echestIndex, echestLoc);
+            echestIndex++;
+        }
         
         config.set("swagshack", this.swagShack);
         config.set("spawncenter", this.spawnCenter);
@@ -764,6 +791,10 @@ public class SGMap {
         for (MapSpawn spawn : other.spawns) {
             addSpawn(spawn.clone());
         }
+
+        for (Position enderChestLocation : other.enderChestLocations) {
+            this.addEnderChestLocation(enderChestLocation.clone());
+        }
         
         this.creators.clear();
         this.creators.addAll(other.creators);
@@ -787,5 +818,10 @@ public class SGMap {
         this.workbenches = other.workbenches;
         this.furnaces = other.furnaces;
         this.totalBlocks = other.totalBlocks;
+    }
+
+    public void setEnderChests(Set<Position> echestLocs) {
+        this.enderChestLocations.clear();
+        this.enderChestLocations.addAll(echestLocs);
     }
 }
