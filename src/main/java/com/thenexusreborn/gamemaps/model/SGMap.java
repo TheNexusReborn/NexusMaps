@@ -482,7 +482,7 @@ public class SGMap {
     public boolean load(JavaPlugin plugin) {
         try {
             if (this.worldFolder != null) {
-                this.world = Bukkit.createWorld(new WorldCreator(this.prefix + this.name));
+                this.world = Bukkit.createWorld(new WorldCreator(this.prefix + this.name).generator(new SGChunkGenerator(this)));
                 return this.world != null;
             }
         } catch (Exception e) {
