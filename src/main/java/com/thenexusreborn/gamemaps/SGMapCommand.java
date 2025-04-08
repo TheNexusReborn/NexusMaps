@@ -133,7 +133,7 @@ public class SGMapCommand implements CommandExecutor {
                             creators.append("&a").append(creator).append("&7, ");
                         }
                         
-                        creators.delete(creators.length() - 5, creators.length());
+                        creators.delete(creators.length() - 4, creators.length());
                     }
                     
                     StarColors.coloredMessage(player, " &6&l> &7Creators: " + creators);
