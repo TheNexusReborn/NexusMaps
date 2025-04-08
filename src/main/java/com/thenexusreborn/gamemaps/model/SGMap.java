@@ -745,6 +745,8 @@ public class SGMap {
         
         recalculateSpawns();
         
+        config.set("spawns", null);
+        
         for (MapSpawn spawn : this.spawns) {
             config.set("spawns." + spawn.getIndex(), spawn);
         }
