@@ -297,7 +297,7 @@ public class SGMapCommand implements CommandExecutor {
 
                     Location location = player.getLocation();
                     MapSpawn mapSpawn = new MapSpawn(gameMap.getId(), position, location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                    gameMap.setSpawn(position, mapSpawn);
+                    gameMap.setSpawn(position - 1, mapSpawn);
                     Location blockLocation = mapSpawn.toBlockLocation(gameMap.getWorld());
                     player.teleport(location.clone().add(0, 1, 0));
                     blockLocation.getBlock().setType(Material.BEDROCK);
