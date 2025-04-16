@@ -4,12 +4,20 @@ import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.api.sql.annotations.table.TableName;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.util.Vector;
 
+import java.util.Map;
 import java.util.Objects;
 
 @TableName("sgmapspawns")
-public class MapSpawn extends Position implements Comparable<MapSpawn> {
+public class MapSpawn extends Position implements Comparable<MapSpawn>, ConfigurationSerializable, Cloneable {
+    
+    static {
+        ConfigurationSerialization.registerClass(MapSpawn.class);
+    }
+    
     private long id; 
     private long mapId;
     private int index = -1;
@@ -28,7 +36,14 @@ public class MapSpawn extends Position implements Comparable<MapSpawn> {
         this.y = y;
         this.z = z;
     }
-    
+
+    public MapSpawn(Map<String, Object> serialized) {
+        super(serialized);
+        this.id = (long) ((int) serialized.get("id"));
+        this.mapId = (long) ((int) serialized.get("mapId"));
+        this.index = (int) serialized.get("index");
+    }
+
     @Override
     public String toString() {
         return "(" + id + "," + index + "," + mapId + ") (" + x + "," + y + "," + z + ')';
@@ -95,5 +110,19 @@ public class MapSpawn extends Position implements Comparable<MapSpawn> {
             return -1;
         }
         return Integer.compare(this.index, o.index);
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> serialized = super.serialize();
+        serialized.put("id", this.id);
+        serialized.put("mapId", this.mapId);
+        serialized.put("index", this.index);
+        return serialized;
+    }
+    
+    @Override
+    public MapSpawn clone() {
+        return new MapSpawn(-1, this.index, (int) this.x, (int) this.y, (int) this.z);
     }
 }

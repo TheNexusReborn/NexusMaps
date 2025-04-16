@@ -1,7 +1,10 @@
 package com.thenexusreborn.gamemaps.model;
 
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitUtil;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.regions.CuboidRegion;
 import com.stardevllc.helper.FileHelper;
-import com.stardevllc.starcore.utils.Cuboid;
 import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.player.NexusPlayer;
@@ -20,6 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -33,11 +37,9 @@ public class SGMap {
     private String url;
     private String name;
     private String prefix;
-    
-    private Position center;
+
     @ColumnIgnored
     private Set<MapSpawn> spawns = new LinkedHashSet<>();
-    private int borderDistance, deathmatchBorderDistance;
     @ColumnType("varchar(1000)")
     @ColumnCodec(StringSetCodec.class)
     private Set<String> creators = new HashSet<>();
@@ -46,14 +48,34 @@ public class SGMap {
     private Map<UUID, MapRating> ratings = new HashMap<>();
     private Position swagShack;
     
+    private Set<Position> enderChestLocations = new HashSet<>();
+
+    //This is the center of the spawns for the arena, where spectators will spawn in
+    //And where players will look at when teleported to a game spawn
+    private Position spawnCenter;
+
+    private Position arenaMinimum;
+    private Position arenaMaximum;
+    private Position arenaCenter;
+
+    //This is the length of the sides of the world border for the arena
+    private int arenaBorderLength;
+
+    private Position deathmatchMinimum;
+    private Position deathmatchMaximum;
+    private Position deathmatchCenter;
+
+    //This is the length of the sides of the world border
+    private int deathmatchBorderLength;
+
     //Analytics - Done via command /sg map analyze
     private int chests, enchantTables, workbenches, furnaces, totalBlocks;
-    
+
     @ColumnIgnored
     private UUID uniqueId;
     @ColumnIgnored
     private World world;
-    
+
     @ColumnIgnored
     private Path downloadedZip, unzippedFolder, worldFolder;
     @ColumnIgnored
@@ -61,63 +83,134 @@ public class SGMap {
     @ColumnIgnored
     private int votes;
     @ColumnIgnored
-    private Cuboid deathmatchArea;
-    
+    private CuboidRegion deathmatchRegion, arenaRegion;
+
     private SGMap() {
     }
-    
-    public boolean isSetup() {
-        if (this.center == null) {
-            System.out.println("Center for map " + getName() + " is null");
-            return false;
-        }
-        
-        if (this.spawns.size() != 24) {
-            System.out.println("Spawn size for map " + getName() + " is " + this.spawns.size());
-            return false;
-        }
-        
-        if (this.borderDistance == 0) {
-            System.out.println("Border for map " + getName() + " is 0");
-            return false;
-        }
-        
-        if (this.deathmatchBorderDistance == 0) {
-            System.out.println("Deathmatch Border Distance for map " + getName() + " is 0");
-            return false;
-        }
-        
-        if (creators.isEmpty()) {
-            System.out.println("Creators for map " + getName() + " is empty");
-            return false;
-        }
 
-        return true;
+    public boolean isValid() {
+        if (this.url == null || this.url.isEmpty()) {
+            return false;
+        }
+        
+        if (this.name == null || this.name.isEmpty()) {
+            return false;
+        }
+        
+        if (this.spawns.size() < 2) {
+            return false;
+        }
+        
+        if (this.creators.isEmpty()) {
+            return false;
+        }
+        
+        if (this.spawnCenter == null) {
+            return false;
+        }
+        
+        if (this.arenaMinimum == null || this.arenaMaximum == null || this.arenaCenter == null || this.arenaBorderLength == 0) {
+            return false;
+        }
+        
+        return !(this.deathmatchMinimum == null || this.deathmatchMaximum == null || this.deathmatchCenter == null || this.deathmatchBorderLength == 0);
     }
-    
+
     public SGMap(String fileName, String name) {
         this.url = fileName;
         this.name = name;
     }
-    
+
+    public Position getArenaCenter() {
+        return arenaCenter;
+    }
+
+    public void setArenaCenter(Position arenaCenter) {
+        this.arenaCenter = arenaCenter;
+    }
+
+    public Position getDeathmatchCenter() {
+        return deathmatchCenter;
+    }
+
+    public void setDeathmatchCenter(Position deathmatchCenter) {
+        this.deathmatchCenter = deathmatchCenter;
+    }
+
+    public int getArenaBorderLength() {
+        return arenaBorderLength;
+    }
+
+    public void setArenaBorderLength(int arenaBorderLength) {
+        this.arenaBorderLength = arenaBorderLength;
+    }
+
+    public int getDeathmatchBorderLength() {
+        return deathmatchBorderLength;
+    }
+
+    public void setDeathmatchBorderLength(int deathmatchBorderLength) {
+        this.deathmatchBorderLength = deathmatchBorderLength;
+    }
+
+    public Position getSpawnCenter() {
+        return spawnCenter;
+    }
+
+    public void setSpawnCenter(Position spawnCenter) {
+        this.spawnCenter = spawnCenter;
+    }
+
+    public Position getArenaMinimum() {
+        return arenaMinimum;
+    }
+
+    public void setArenaMinimum(Position arenaMinimum) {
+        this.arenaMinimum = arenaMinimum;
+    }
+
+    public Position getArenaMaximum() {
+        return arenaMaximum;
+    }
+
+    public void setArenaMaximum(Position arenaMaximum) {
+        this.arenaMaximum = arenaMaximum;
+    }
+
+    public Position getDeathmatchMinimum() {
+        return deathmatchMinimum;
+    }
+
+    public void setDeathmatchMinimum(Position deathmatchMinimum) {
+        this.deathmatchMinimum = deathmatchMinimum;
+    }
+
+    public Position getDeathmatchMaximum() {
+        return deathmatchMaximum;
+    }
+
+    public void setDeathmatchMaximum(Position deathmathMaximum) {
+        this.deathmatchMaximum = deathmathMaximum;
+    }
+
     public Location getCenterLocation() {
         if (this.world != null) {
-            if (this.center != null) {
-                return getCenter().toLocation(this.world);
+            if (this.spawnCenter != null) {
+                return getSpawnCenter().toLocation(this.world);
             }
         }
-        
+
         return null;
     }
-    
+
     public void recalculateSpawns() {
         if (spawns.isEmpty()) {
             return;
         }
-        
+
         List<MapSpawn> spawns = new LinkedList<>(this.spawns);
         Collections.sort(spawns);
-        
+
         for (int i = 0; i < spawns.size(); i++) {
             MapSpawn spawn = spawns.get(i);
             if (spawn != null) {
@@ -125,29 +218,41 @@ public class SGMap {
             }
         }
     }
-    
+
     public int getNextIndex() {
         if (this.spawns.isEmpty()) {
             return 0;
         }
-        
+
         int lastIndex = 0;
         for (MapSpawn spawn : this.spawns) {
             if (spawn.getIndex() > lastIndex) {
                 lastIndex = spawn.getIndex();
             }
         }
-        
+
         return lastIndex + 1;
     }
+
+    public Set<Position> getEnderChestLocations() {
+        return enderChestLocations;
+    }
     
+    public void addEnderChestLocation(Position position) {
+        this.enderChestLocations.add(position);
+    }
+    
+    public void addEnderChestLocation(Location location) {
+        addEnderChestLocation(Position.fromLocation(location));
+    }
+
     public void removeFromServer(JavaPlugin plugin) {
         try {
             uniqueId = null;
-            if (downloadedZip != null) {
-                Files.deleteIfExists(downloadedZip);
-                downloadedZip = null;
-            }
+//            if (downloadedZip != null) {
+//                Files.deleteIfExists(downloadedZip);
+//                downloadedZip = null;
+//            }
 
             if (this.world != null) {
                 for (Player player : world.getPlayers()) {
@@ -156,19 +261,19 @@ public class SGMap {
                         nexusPlayer.getServer().teleportToSpawn(player.getUniqueId());
                     }
                 }
-                
+
                 boolean success = Bukkit.unloadWorld(world, false);
                 if (!success) {
                     plugin.getLogger().severe("Failed to unload world for map " + this.name);
                 }
                 world = null;
             }
-            
+
             if (Files.exists(worldFolder)) {
                 FileHelper.deleteDirectory(worldFolder);
                 worldFolder = null;
             }
-            
+
             if (Files.exists(unzippedFolder)) {
                 FileHelper.deleteDirectory(unzippedFolder);
                 unzippedFolder = null;
@@ -177,34 +282,44 @@ public class SGMap {
             e.printStackTrace();
         }
     }
-    
+
     public boolean download(JavaPlugin plugin) {
         if (downloadedZip == null || !Files.exists(downloadedZip)) {
             Path downloadFolder = FileHelper.subPath(plugin.getDataFolder().toPath(), "mapdownloads");
             FileHelper.createDirectoryIfNotExists(downloadFolder);
-            downloadedZip = FileHelper.downloadFile(url, downloadFolder, getName().toLowerCase().replace("'", "").replace(" ", "_") + ".zip", true);
+
+            String fileName = getName().toLowerCase().replace("'", "").replace(" ", "_") + ".zip";
+
+            Path existing = FileSystems.getDefault().getPath(downloadFolder.toString(), fileName);
+            if (Files.exists(existing)) {
+                System.out.println("Found existing zip for " + name);
+                this.downloadedZip = existing;
+                return true;
+            }
+
+            downloadedZip = FileHelper.downloadFile(url, downloadFolder, fileName, true);
         }
         return downloadedZip != null && Files.exists(downloadedZip);
     }
-    
+
     public void addCreator(String creator) {
         this.creators.add(creator);
     }
-    
+
     public void addCreators(String... creators) {
         this.creators.addAll(Arrays.asList(creators));
     }
-    
+
     public void removeCreator(String creator) {
         this.creators.remove(creator);
     }
-    
+
     public void setSpawns(Collection<MapSpawn> spawns) {
         this.spawns.clear();
         this.spawns.addAll(spawns);
         this.spawns.forEach(spawn -> spawn.setMapId(this.id));
     }
-    
+
     public int addSpawn(MapSpawn spawn) {
         if (spawn.getIndex() == -1) {
             int index = getNextIndex();
@@ -214,98 +329,74 @@ public class SGMap {
         spawn.setMapId(this.getId());
         return spawn.getIndex();
     }
-    
+
     public void setSpawn(int index, MapSpawn spawn) {
         spawn.setIndex(index);
         spawn.setMapId(this.getId());
         this.spawns.removeIf(s -> s.getIndex() == index);
         this.spawns.add(spawn);
     }
-    
+
     public void removeSpawn(int index) {
         this.spawns.removeIf(spawn -> spawn.getIndex() == index);
         recalculateSpawns();
     }
-    
+
     public String getUrl() {
         return url;
     }
-    
+
     public void setUrl(String url) {
         this.url = url;
     }
-    
+
     public String getName() {
         if (this.name.contains("''")) {
             this.name = name.replace("''", "'");
         }
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
-    public Position getCenter() {
-        return center;
-    }
-    
-    public void setCenter(Position center) {
-        this.center = center;
-    }
-    
+
     public List<MapSpawn> getSpawns() {
         return new LinkedList<>(spawns);
     }
-    
+
     public void clearSpawns() {
         this.spawns.clear();
     }
-    
-    public int getBorderDistance() {
-        return borderDistance;
-    }
-    
-    public void setBorderDistance(int borderDistance) {
-        this.borderDistance = borderDistance;
-    }
-    
-    public int getDeathmatchBorderDistance() {
-        return this.deathmatchBorderDistance;
-    }
-    
-    public void setDeathmatchBorderDistance(int deathmatchBorderDistance) {
-        this.deathmatchBorderDistance = deathmatchBorderDistance;
-    }
-    
+
     public Set<String> getCreators() {
         return creators;
     }
-    
+
     public UUID getUniqueId() {
         return uniqueId;
     }
-    
+
     public void setUniqueId(UUID uniqueId) {
         this.uniqueId = uniqueId;
     }
-    
+
     public World getWorld() {
         return world;
     }
-    
+
     public void setWorld(World world) {
         this.world = world;
     }
-    
+
     public Path getDownloadedZip() {
         return downloadedZip;
     }
-    
+
     public void setDownloadedZip(Path downloadedZip) {
         this.downloadedZip = downloadedZip;
     }
-    
+
     public boolean unzip(JavaPlugin plugin) {
         Path unzippedMapsFolder = FileHelper.subPath(plugin.getDataFolder().toPath(), "unzippedmaps");
         unzippedFolder = FileHelper.subPath(unzippedMapsFolder, this.name);
@@ -314,7 +405,7 @@ public class SGMap {
         try {
             ZipInputStream zis = new ZipInputStream(Files.newInputStream(this.downloadedZip.toFile().toPath()));
             ZipEntry zipEntry = zis.getNextEntry();
-            
+
             while (zipEntry != null) {
                 Path newFile = newFile(unzippedFolder.toFile(), zipEntry);
                 if (zipEntry.isDirectory()) {
@@ -328,7 +419,7 @@ public class SGMap {
                             throw new IOException("Failed to create directory " + parent);
                         }
                     }
-                    
+
                     // write file content
                     FileOutputStream fos = new FileOutputStream(newFile.toFile());
                     int len;
@@ -348,24 +439,24 @@ public class SGMap {
         }
         return true;
     }
-    
+
     public Path getUnzippedFolder() {
         return unzippedFolder;
     }
-    
+
     private Path newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
         Path path = FileHelper.subPath(destinationDir.toPath(), zipEntry.getName());
-        
+
         String destDirPath = destinationDir.getCanonicalPath();
         String destFilePath = path.toFile().getCanonicalPath();
-        
+
         if (!destFilePath.startsWith(destDirPath + File.separator)) {
             throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
         }
-        
+
         return path;
     }
-    
+
     public boolean copyFolder(JavaPlugin plugin, String prefix, boolean randomizeName) {
         try {
             if (this.unzippedFolder != null) {
@@ -387,7 +478,7 @@ public class SGMap {
         }
         return true;
     }
-    
+
     public boolean load(JavaPlugin plugin) {
         try {
             if (this.worldFolder != null) {
@@ -399,50 +490,78 @@ public class SGMap {
         }
         return false;
     }
-    
+
     public void setEditing(boolean editing) {
         this.editing = editing;
     }
-    
+
     public boolean isEditing() {
         return editing;
     }
-    
+
     public int getVotes() {
         return votes;
     }
-    
+
     public void setVotes(int votes) {
         this.votes = votes;
     }
-    
+
     public boolean isActive() {
         return active;
     }
-    
+
     public void setActive(boolean active) {
         if (active) {
-            this.active = isSetup();
+            this.active = isValid();
         } else {
             this.active = false;
         }
     }
-    
+
     public long getId() {
         return id;
     }
-    
+
     public void setId(long id) {
         this.id = id;
         this.spawns.forEach(spawn -> spawn.setMapId(id));
     }
-    
-    public void setDeathmatchArea(Cuboid deathmatchArea) {
-        this.deathmatchArea = deathmatchArea;
+
+    public CuboidRegion getArenaRegion() {
+        if (this.arenaRegion != null) {
+            return this.arenaRegion;
+        }
+
+        if (world == null) {
+            return null;
+        }
+
+        Vector min = new Vector(this.arenaMinimum.getX(), this.arenaMinimum.getY(), this.arenaMinimum.getZ());
+        Vector max = new Vector(this.arenaMaximum.getX(), this.arenaMaximum.getY(), this.arenaMaximum.getZ());
+
+        com.sk89q.worldedit.world.World bukkitWorld = BukkitUtil.getLocalWorld(this.world);
+
+        this.arenaRegion = new CuboidRegion(bukkitWorld, min, max);
+        return arenaRegion;
     }
-    
-    public Cuboid getDeathmatchArea() {
-        return deathmatchArea;
+
+    public CuboidRegion getDeathmatchRegion() {
+        if (this.deathmatchRegion != null) {
+            return this.deathmatchRegion;
+        }
+
+        if (world == null) {
+            return null;
+        }
+
+        Vector min = new Vector(this.deathmatchMinimum.getX(), this.deathmatchMinimum.getY(), this.deathmatchMinimum.getZ());
+        Vector max = new Vector(this.deathmatchMaximum.getX(), this.deathmatchMaximum.getY(), this.deathmatchMaximum.getZ());
+
+        com.sk89q.worldedit.world.World bukkitWorld = new BukkitWorld(this.world);
+
+        this.deathmatchRegion = new CuboidRegion(bukkitWorld, min, max);
+        return deathmatchRegion;
     }
 
     @Override
@@ -451,10 +570,7 @@ public class SGMap {
                 "id=" + id +
                 ", url='" + url + '\'' +
                 ", name='" + name + '\'' +
-                ", center=" + center +
                 ", spawns=" + spawns +
-                ", borderDistance=" + borderDistance +
-                ", deathmatchBorderDistance=" + deathmatchBorderDistance +
                 ", creators=" + creators +
                 ", active=" + active +
                 ", ratings=" + ratings +
@@ -466,22 +582,22 @@ public class SGMap {
                 ", worldFolder=" + worldFolder +
                 ", editing=" + editing +
                 ", votes=" + votes +
-                ", deathmatchArea=" + deathmatchArea +
+                ", deathmatchArea=" + deathmatchRegion +
                 '}';
     }
 
     public void setRatings(List<MapRating> ratings) {
         ratings.forEach(rating -> this.ratings.put(rating.getPlayer(), rating));
     }
-    
+
     public Map<UUID, MapRating> getRatings() {
         return ratings;
     }
-    
+
     public Position getSwagShack() {
         return swagShack;
     }
-    
+
     public void setSwagShack(Position swagShack) {
         this.swagShack = swagShack;
     }
@@ -535,79 +651,84 @@ public class SGMap {
     public void applyWorldBoarder(String viewOption, int seconds) {
         World world = getWorld();
         WorldBorder worldBorder = world.getWorldBorder();
-        worldBorder.setCenter(this.getCenter().toLocation(world));
         if (viewOption.equalsIgnoreCase("deathmatch")) {
-            worldBorder.setSize(this.deathmatchBorderDistance);
+            worldBorder.setCenter(this.deathmatchCenter.toLocation(world));
+            worldBorder.setSize(this.deathmatchBorderLength);
             if (seconds != 0) {
                 worldBorder.setSize(10, seconds);
             }
         } else if (viewOption.equalsIgnoreCase("game")) {
-            worldBorder.setSize(this.borderDistance);
+            worldBorder.setCenter(this.arenaCenter.toLocation(world));
+            worldBorder.setSize(this.arenaBorderLength);
         }
     }
 
     public void applyWorldBoarder(String viewOption) {
         applyWorldBoarder(viewOption, 0);
     }
-    
-    public static SGMap loadFromYaml(FileConfiguration config) {
-        long id = config.getLong("id");
-        String url = config.getString("url");
-        String name = config.getString("name");
-        SGMap map = new SGMap(url, name);
-        map.setId(id);
-        map.setBorderDistance(config.getInt("borderDistance"));
-        map.setDeathmatchBorderDistance(config.getInt("deathmatchBorderDistance"));
-        if (config.contains("center")) {
-            Position center = new Position(config.getInt("center.x"), config.getInt("center.y"), config.getInt("center.z"));
-            map.setCenter(center);
-        }
-        
-        if (config.contains("swagshack")) {
-            Position swagShack = new Position(config.getInt("swagshack.x"), config.getInt("swagshack.y"), config.getInt("swagshack.z"));
-            map.setSwagShack(swagShack);
-        }
-        
-        if (config.contains("creators")) {
-            map.setCreators(config.getStringList("creators"));
-        }
-        
-        if (config.contains("ratings")) {
-            ConfigurationSection ratingsSection = config.getConfigurationSection("ratings");
-            if (ratingsSection != null) {
-                for (String key : ratingsSection.getKeys(false)) {
-                    UUID player = UUID.fromString(ratingsSection.getString(key + ".player"));
-                    int value = ratingsSection.getInt(key + ".value");
-                    long timestamp = ratingsSection.getLong(key + ".timestamp");
-                    map.getRatings().put(player, new MapRating(map.getName(), player, value, timestamp));
-                }
-            }
-        }
-        
-        if (config.contains("spawns")) {
-            ConfigurationSection spawnsSection = config.getConfigurationSection("spawns");
-            if (spawnsSection != null) {
-                for (String key : spawnsSection.getKeys(false)) {
-                    int index = Integer.parseInt(key);
-                    int x = spawnsSection.getInt(key + ".x");
-                    int y = spawnsSection.getInt(key + ".y");
-                    int z = spawnsSection.getInt(key + ".z");
-                    map.addSpawn(new MapSpawn(map.getId(), index, x, y, z));
-                }
-            }
-        }
 
-        map.setActive(config.getBoolean("active"));
-        
-        if (config.contains("stats")) {
-            map.setChests(config.getInt("stats.chests"));
-            map.setEnchantTables(config.getInt("stats.enchanttables"));
-            map.setWorkbenches(config.getInt("stats.workbenches"));
-            map.setFurnaces(config.getInt("stats.furnaces"));
-            map.setTotalBlocks(config.getInt("stats.totalblocks"));
+    public static SGMap loadFromYaml(FileConfiguration config) {
+        SGMap sgMap = new SGMap();
+        sgMap.setId(config.getLong("id"));
+        sgMap.setUrl(config.getString("url"));
+        sgMap.setName(config.getString("name"));
+        sgMap.setPrefix(config.getString("prefix"));
+
+        ConfigurationSection spawnsSection = config.getConfigurationSection("spawns");
+        if (spawnsSection != null) {
+            for (String key : spawnsSection.getKeys(false)) {
+                MapSpawn mapSpawn = (MapSpawn) spawnsSection.get(key);
+                sgMap.setSpawn(mapSpawn.getIndex(), mapSpawn);
+            }
         }
         
-        return map;
+        sgMap.recalculateSpawns();
+        
+        sgMap.setCreators(config.getStringList("creators"));
+
+        ConfigurationSection ratingsSection = config.getConfigurationSection("ratings");
+        if (ratingsSection != null) {
+            for (String key : ratingsSection.getKeys(false)) {
+                sgMap.addRating((MapRating) ratingsSection.get(key));
+            }
+        }
+        
+        ConfigurationSection echestsSection = config.getConfigurationSection("enderchests");
+        if (echestsSection != null) {
+            for (String key : echestsSection.getKeys(false)) {
+                sgMap.addEnderChestLocation((Position) echestsSection.get(key));
+            }
+        }
+        
+        sgMap.setSwagShack((Position) config.get("swagshack"));
+        sgMap.setSpawnCenter((Position) config.get("spawncenter"));
+        
+        sgMap.setArenaMinimum((Position) config.get("arena.min"));
+        sgMap.setArenaMaximum((Position) config.get("arena.max"));
+        sgMap.setArenaCenter((Position) config.get("arena.center"));
+        sgMap.setArenaBorderLength(config.getInt("arena.borderlength"));
+        
+        sgMap.setDeathmatchMinimum((Position) config.get("deathmatch.min"));
+        sgMap.setDeathmatchMaximum((Position) config.get("deathmatch.max"));
+        sgMap.setDeathmatchCenter((Position) config.get("deathmatch.center"));
+        sgMap.setDeathmatchBorderLength(config.getInt("deathmatch.borderlength"));
+        
+        sgMap.setChests(config.getInt("stats.chests"));
+        sgMap.setEnchantTables(config.getInt("stats.enchanttables"));
+        sgMap.setWorkbenches(config.getInt("stats.workbenches"));
+        sgMap.setFurnaces(config.getInt("stats.furnaces"));
+        sgMap.setTotalBlocks(config.getInt("stats.totalblocks"));
+        sgMap.setActive(config.getBoolean("active"));
+
+        return sgMap;
+    }
+    
+    public void addRating(MapRating rating) {
+        this.ratings.put(rating.getPlayer(), rating);
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     public void setCreators(Collection<String> creators) {
@@ -616,52 +737,93 @@ public class SGMap {
     }
 
     public void saveToYaml(FileConfiguration config) {
-        config.set("id", getId());
-        config.set("url", getUrl());
-        config.set("name", getName());
-        config.set("active", isActive());
-        config.set("borderDistance", getBorderDistance());
-        config.set("deathmatchBorderDistance", getDeathmatchBorderDistance());
-        if (getCenter() != null) {
-            config.set("center.x", getCenter().getX());
-            config.set("center.y", getCenter().getY());
-            config.set("center.z", getCenter().getZ());
+        config.set("id", this.id);
+        config.set("url", this.url);
+        config.set("name", this.name);
+        config.set("prefix", this.prefix);
+        config.set("active", this.active);
+        
+        recalculateSpawns();
+        
+        config.set("spawns", null);
+        
+        for (MapSpawn spawn : this.spawns) {
+            config.set("spawns." + spawn.getIndex(), spawn);
+        }
+        
+        config.set("creators", new ArrayList<>(this.creators));
+
+        for (MapRating rating : this.ratings.values()) {
+            config.set("ratings." + rating.getPlayer().toString(), rating);
         }
 
-        if (getSwagShack() != null) {
-            config.set("swagshack.x", getSwagShack().getX());
-            config.set("swagshack.y", getSwagShack().getY());
-            config.set("swagshack.z", getSwagShack().getZ());
+        int echestIndex = 0;
+        for (Position echestLoc : this.enderChestLocations) {
+            config.set("enderchests." + echestIndex, echestLoc);
+            echestIndex++;
         }
-
-        if (!getCreators().isEmpty()) {
-            config.set("creators", new ArrayList<>(getCreators()));
-        }
-
-        if (!getRatings().isEmpty()) {
-            int rid = 0;
-            for (MapRating rating : getRatings().values()) {
-                String path = "ratings." + rid + ".";
-                config.set(path + "player", rating.getPlayer().toString());
-                config.set(path + "value", rating.getRating());
-                config.set(path + "timestamp", rating.getTimestamp());
-                rid++;
-            }
-        }
-
-        if (!getSpawns().isEmpty()) {
-            for (MapSpawn spawn : getSpawns()) {
-                String path = "spawns." + spawn.getIndex() + ".";
-                config.set(path + "x", spawn.getX());
-                config.set(path + "y", spawn.getY());
-                config.set(path + "z", spawn.getZ());
-            }
-        }
+        
+        config.set("swagshack", this.swagShack);
+        config.set("spawncenter", this.spawnCenter);
+        
+        config.set("arena.min", this.arenaMinimum);
+        config.set("arena.max", this.arenaMaximum);
+        config.set("arena.center", this.arenaCenter);
+        config.set("arena.borderlength", this.arenaBorderLength);
+        
+        config.set("deathmatch.min", this.deathmatchMinimum);
+        config.set("deathmatch.max", this.deathmatchMaximum);
+        config.set("deathmatch.center", this.deathmatchCenter);
+        config.set("deathmatch.borderlength", this.deathmatchBorderLength);
         
         config.set("stats.chests", this.chests);
         config.set("stats.enchanttables", this.enchantTables);
         config.set("stats.workbenches", this.workbenches);
         config.set("stats.furnaces", this.furnaces);
         config.set("stats.totalblocks", this.totalBlocks);
+    }
+    
+    public void copyFrom(SGMap other) {
+        this.url = other.url;
+        this.name = other.name;
+        this.prefix = other.prefix;
+
+        this.spawns.clear();
+        
+        for (MapSpawn spawn : other.spawns) {
+            addSpawn(spawn.clone());
+        }
+
+        for (Position enderChestLocation : other.enderChestLocations) {
+            this.addEnderChestLocation(enderChestLocation.clone());
+        }
+        
+        this.creators.clear();
+        this.creators.addAll(other.creators);
+        
+        this.active = other.active;
+        this.swagShack = other.swagShack == null ? null : other.swagShack.clone();
+        this.spawnCenter = other.spawnCenter == null ? null : other.spawnCenter.clone();
+
+        this.arenaMinimum = other.arenaMinimum == null ? null : other.arenaMinimum.clone();
+        this.arenaMaximum = other.arenaMaximum == null ? null : other.arenaMaximum.clone();
+        this.arenaCenter = other.arenaCenter == null ? null : other.arenaCenter.clone();
+        this.arenaBorderLength = other.arenaBorderLength;
+
+        this.deathmatchMinimum = other.deathmatchMinimum == null ? null : other.deathmatchMinimum.clone();
+        this.deathmatchMaximum = other.deathmatchMaximum == null ? null : other.deathmatchMaximum.clone();
+        this.deathmatchCenter = other.deathmatchCenter == null ? null : other.deathmatchCenter.clone();
+        this.deathmatchBorderLength = other.deathmatchBorderLength;
+        
+        this.chests = other.chests;
+        this.enchantTables = other.enchantTables;
+        this.workbenches = other.workbenches;
+        this.furnaces = other.furnaces;
+        this.totalBlocks = other.totalBlocks;
+    }
+
+    public void setEnderChests(Set<Position> echestLocs) {
+        this.enderChestLocations.clear();
+        this.enderChestLocations.addAll(echestLocs);
     }
 }
