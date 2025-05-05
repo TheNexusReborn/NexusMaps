@@ -292,7 +292,7 @@ public class SGMap {
 
             Path existing = FileSystems.getDefault().getPath(downloadFolder.toString(), fileName);
             if (Files.exists(existing)) {
-                System.out.println("Found existing zip for " + name);
+                plugin.getLogger().info("Found existing zip for " + name);
                 this.downloadedZip = existing;
                 return true;
             }
