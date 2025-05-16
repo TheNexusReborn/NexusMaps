@@ -18,10 +18,10 @@ processResources {
 }
 
 dependencies {
-    compileOnly 'com.github.StarDevelopmentLLC:StarCore:0.2.2'
+    compileOnly 'com.github.StarDevelopmentLLC:StarCore:0.3.1'
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     compileOnly 'com.thenexusreborn:NexusCore:1.15.3-ALPHA'
-    compileOnly 'com.github.StarDevelopmentLLC:StarItems:0.1.4'
+    compileOnly 'com.github.StarDevelopmentLLC:StarItems:0.1.5'
     compileOnly 'com.sk89q.worldedit:worldedit-core:6.1'
     compileOnly 'com.sk89q.worldedit:worldedit-bukkit:6.1.5'
 }
