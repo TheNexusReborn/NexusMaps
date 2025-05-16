@@ -6,7 +6,7 @@ import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.stardevllc.helper.FileHelper;
 import com.stardevllc.starcore.utils.Position;
-import com.thenexusreborn.api.NexusAPI;
+import com.thenexusreborn.api.NexusReborn;
 import com.thenexusreborn.api.player.NexusPlayer;
 import com.thenexusreborn.api.sql.annotations.column.ColumnCodec;
 import com.thenexusreborn.api.sql.annotations.column.ColumnIgnored;
@@ -256,7 +256,7 @@ public class SGMap {
 
             if (this.world != null) {
                 for (Player player : world.getPlayers()) {
-                    NexusPlayer nexusPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(player.getUniqueId());
+                    NexusPlayer nexusPlayer = NexusReborn.getPlayerManager().getNexusPlayer(player.getUniqueId());
                     if (nexusPlayer != null) {
                         nexusPlayer.getServer().teleportToSpawn(player.getUniqueId());
                     }
