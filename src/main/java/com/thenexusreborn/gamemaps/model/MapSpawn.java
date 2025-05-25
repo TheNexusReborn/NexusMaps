@@ -1,18 +1,20 @@
 package com.thenexusreborn.gamemaps.model;
 
 import com.stardevllc.starcore.utils.Position;
+import com.thenexusreborn.api.sql.annotations.column.ColumnIgnored;
 import com.thenexusreborn.api.sql.annotations.table.TableName;
+import eu.decentsoftware.holograms.api.DHAPI;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.util.Vector;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @TableName("sgmapspawns")
-public class MapSpawn extends Position implements Comparable<MapSpawn>, ConfigurationSerializable, Cloneable {
+public class MapSpawn extends Position implements Comparable<MapSpawn> {
     
     static {
         ConfigurationSerialization.registerClass(MapSpawn.class);
@@ -21,6 +23,9 @@ public class MapSpawn extends Position implements Comparable<MapSpawn>, Configur
     private long id; 
     private long mapId;
     private int index = -1;
+    
+    @ColumnIgnored
+    private Hologram hologram;
     
     public static MapSpawn fromLocation(int mapId, int index, Location location) {
         return new MapSpawn(mapId, index, location.getBlockX(), location.getBlockY(), location.getBlockZ());
@@ -43,7 +48,50 @@ public class MapSpawn extends Position implements Comparable<MapSpawn>, Configur
         this.mapId = (long) ((int) serialized.get("mapId"));
         this.index = (int) serialized.get("index");
     }
-
+    
+    public Hologram getHologram() {
+        return hologram;
+    }
+    
+    public void setHologram(Hologram hologram) {
+        this.hologram = hologram;
+    }
+    
+    public Hologram createHologram(World world) {
+        if (this.hologram != null) {
+            this.hologram.delete();
+            this.hologram = null;
+        }
+        
+        Location location = toBlockLocation(world).add(.5, 1, .5);
+        String line = ChatColor.translateAlternateColorCodes('&', "&eSpawn Index: &a" + (this.index + 1));
+        
+        Hologram existing = DHAPI.getHologram("spawn_" + this.index);
+        if (existing != null) {
+            existing.delete();
+        }
+        
+        this.hologram = DHAPI.createHologram("spawn_" + this.index, location, List.of(line));
+        return this.hologram;
+    }
+    
+    public void updateHologram(World world) {
+        if (this.hologram == null) {
+            createHologram(world);
+            return;
+        }
+        
+        String line = ChatColor.translateAlternateColorCodes('&', "&eSpawn Index: &a" + (this.index + 1));
+        DHAPI.setHologramLine(this.hologram, 0, line);
+    }
+    
+    public void deleteHologram() {
+        if (this.hologram != null) {
+            this.hologram.delete();
+            this.hologram = null;
+        }
+    }
+    
     @Override
     public String toString() {
         return "(" + id + "," + index + "," + mapId + ") (" + x + "," + y + "," + z + ')';

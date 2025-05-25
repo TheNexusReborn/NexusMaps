@@ -216,6 +216,10 @@ public class SGMap {
             if (spawn != null) {
                 spawn.setIndex(i);
             }
+            
+            if (world != null && editing) {
+                spawn.updateHologram(world);
+            }
         }
     }
 
@@ -253,6 +257,10 @@ public class SGMap {
 //                Files.deleteIfExists(downloadedZip);
 //                downloadedZip = null;
 //            }
+            
+            for (MapSpawn spawn : this.spawns) {
+                spawn.deleteHologram();
+            }
 
             if (this.world != null) {
                 for (Player player : world.getPlayers()) {
@@ -734,6 +742,16 @@ public class SGMap {
     public void setCreators(Collection<String> creators) {
         this.creators.clear();
         this.creators.addAll(creators);
+    }
+    
+    public MapSpawn getSpawn(int position) {
+        for (MapSpawn spawn : this.spawns) {
+            if (spawn.getIndex() == position) {
+                return spawn;
+            }
+        }
+        
+        return null;
     }
 
     public void saveToYaml(FileConfiguration config) {

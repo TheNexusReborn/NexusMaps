@@ -1,6 +1,6 @@
 main: com.thenexusreborn.gamemaps.NexusGameMaps
 name: ${name}
 version: ${version}
-depend: [NexusCore, WorldEdit]
+depend: [NexusCore, WorldEdit, DecentHolograms]
 author: Firestar311
     

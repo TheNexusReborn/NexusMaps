@@ -24,11 +24,12 @@ dependencies {
     compileOnly 'com.github.StarDevelopmentLLC:StarItems:0.1.5'
     compileOnly 'com.sk89q.worldedit:worldedit-core:6.1'
     compileOnly 'com.sk89q.worldedit:worldedit-bukkit:6.1.5'
+    compileOnly 'com.github.decentsoftware-eu:decentholograms:2.8.17'
 }
 
 group = 'com.thenexusreborn'
 //version = '1.2.1-ALPHA'
-version = '0.1.0'
+version = '0.2.0'
 
 java {
     toolchain {
