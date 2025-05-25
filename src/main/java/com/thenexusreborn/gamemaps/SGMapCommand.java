@@ -275,7 +275,8 @@ public class SGMapCommand implements CommandExecutor {
                 }
                 case "clearspawns" -> {
                     for (MapSpawn spawn : gameMap.getSpawns()) {
-                        spawn.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
+//                        spawn.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
+                        spawn.deleteHologram();
                         gameMap.clearSpawns();
                     }
                 }
