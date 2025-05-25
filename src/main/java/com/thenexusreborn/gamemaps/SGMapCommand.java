@@ -280,7 +280,7 @@ public class SGMapCommand implements CommandExecutor {
                         gameMap.clearSpawns();
                     }
                 }
-                case "setspawn", "sp" -> {
+                case "setspawn", "ss" -> {
                     if (!(args.length > argIndex)) {
                         sender.sendMessage(StarColors.color("&cYou must provide an index for the spawn."));
                         return true;
