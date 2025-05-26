@@ -4,13 +4,12 @@ import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Region;
 import com.stardevllc.helper.FileHelper;
 import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.api.NexusReborn;
 import com.thenexusreborn.api.player.NexusPlayer;
-import com.thenexusreborn.api.sql.annotations.column.ColumnCodec;
-import com.thenexusreborn.api.sql.annotations.column.ColumnIgnored;
-import com.thenexusreborn.api.sql.annotations.column.ColumnType;
+import com.thenexusreborn.api.sql.annotations.column.*;
 import com.thenexusreborn.api.sql.annotations.table.TableHandler;
 import com.thenexusreborn.api.sql.annotations.table.TableName;
 import com.thenexusreborn.api.sql.objects.codecs.StringSetCodec;
@@ -20,12 +19,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -84,6 +79,10 @@ public class SGMap {
     private int votes;
     @ColumnIgnored
     private CuboidRegion deathmatchRegion, arenaRegion;
+    @ColumnIgnored
+    private Region borderRegion;
+    @ColumnIgnored
+    private List<Location> borderChangedBlocks = new ArrayList<>();
 
     private SGMap() {
     }
@@ -611,6 +610,14 @@ public class SGMap {
     }
 
     public void disableWorldBorder() {
+//        if (this.borderRegion != null) {
+//            for (BlockVector vector : this.borderRegion) {
+//                Block block = getWorld().getBlockAt(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+//                if (this.borderChangedBlocks.contains(block.getLocation())) {
+//                    block.setType(Material.AIR);
+//                }
+//            }
+//        }
         World world = getWorld();
         WorldBorder worldBorder = world.getWorldBorder();
         worldBorder.reset();
@@ -655,11 +662,24 @@ public class SGMap {
     public void setFurnaces(int furnaces) {
         this.furnaces = furnaces;
     }
-
+    
     public void applyWorldBoarder(String viewOption, int seconds) {
+        disableWorldBorder();
+        
         World world = getWorld();
         WorldBorder worldBorder = world.getWorldBorder();
         if (viewOption.equalsIgnoreCase("deathmatch")) {
+//            borderRegion = getDeathmatchRegion().getFaces();
+//            for (BlockVector vector : borderRegion) {
+//                Block block = getWorld().getBlockAt(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+//                if (block.getType() != Material.AIR) {
+//                    continue;
+//                }
+//
+//                block.setType(Material.STAINED_GLASS_PANE);
+//                block.setData((byte) 14);
+//                borderChangedBlocks.add(block.getLocation());
+//            }
             worldBorder.setCenter(this.deathmatchCenter.toLocation(world));
             worldBorder.setSize(this.deathmatchBorderLength);
             if (seconds != 0) {
@@ -668,6 +688,17 @@ public class SGMap {
         } else if (viewOption.equalsIgnoreCase("game")) {
             worldBorder.setCenter(this.arenaCenter.toLocation(world));
             worldBorder.setSize(this.arenaBorderLength);
+//            borderRegion = getArenaRegion().getFaces();
+//            for (BlockVector vector : borderRegion) {
+//                Block block = getWorld().getBlockAt(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+//                if (block.getType() != Material.AIR) {
+//                    continue;
+//                }
+//
+//                block.setType(Material.STAINED_GLASS_PANE);
+//                block.setData((byte) 4);
+//                borderChangedBlocks.add(block.getLocation());
+//            }
         }
     }
 
