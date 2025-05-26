@@ -54,6 +54,32 @@ public class SGMapCommand implements CommandExecutor {
             sender.sendMessage(StarColors.color("&cOnly players can use that command."));
             return true;
         }
+        
+        if (args[0].equals("recalculateregions")) {
+            StarColors.coloredMessage(player, "&7&oPlease wait while regions are recalculated...");
+            for (SGMap map : this.mapManager.getMaps()) {
+                Position arenaCenter = map.getArenaCenter();
+                int arenaBorderLength = map.getArenaBorderLength() / 2;
+                Position arenaMin = new Position(arenaCenter.getX() - arenaBorderLength - 1, map.getArenaMinimum().getY(), arenaCenter.getZ() - arenaBorderLength - 1);
+                Position arenaMax = new Position(arenaCenter.getX() + arenaBorderLength + 1, map.getArenaMaximum().getY(), arenaCenter.getZ() + arenaBorderLength + 1);
+                
+                map.setArenaMinimum(arenaMin);
+                map.setArenaMaximum(arenaMax);
+                
+                Position deathmatchCenter = map.getDeathmatchCenter();
+                int deathmatchBorderLength = map.getDeathmatchBorderLength() / 2;
+                Position deathmatchMin = new Position(deathmatchCenter.getX() - deathmatchBorderLength - 1, map.getDeathmatchMinimum().getY(), deathmatchCenter.getZ() - deathmatchBorderLength - 1);
+                Position deathmatchMax = new Position(deathmatchCenter.getX() + deathmatchBorderLength + 1, map.getDeathmatchMaximum().getY(), deathmatchCenter.getZ() + deathmatchBorderLength + 1);
+                
+                map.setDeathmatchMinimum(deathmatchMin);
+                map.setDeathmatchMaximum(deathmatchMax);
+                
+                mapManager.saveMap(map);
+                
+                StarColors.coloredMessage(player, "&eUpdated the regions for &e" + map.getName());
+            }
+            return true;
+        }
 
         String mapSubCommand = args[0].toLowerCase();
 
