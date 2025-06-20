@@ -1,10 +1,9 @@
 package com.thenexusreborn.gamemaps;
 
-import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldedit.IncompleteRegionException;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.*;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Region;
 import com.stardevllc.starcore.api.StarColors;
 import com.stardevllc.starcore.api.XMaterial;
 import com.stardevllc.starcore.utils.Position;
@@ -15,7 +14,6 @@ import com.thenexusreborn.gamemaps.model.SGMap;
 import com.thenexusreborn.gamemaps.tasks.AnalyzeThread;
 import com.thenexusreborn.nexuscore.util.MsgType;
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -235,13 +233,26 @@ public class SGMapCommand implements CommandExecutor {
                 }
                 case "delete" -> player.sendMessage(StarColors.color("&cThis command is not yet implemented."));
                 case "setbounds", "sb" -> {
-                    Selection selection = WorldEditPlugin.getPlugin(WorldEditPlugin.class).getSelection(player);
+                    LocalSession playerSession = WorldEdit.getInstance().getSessionManager().get(BukkitAdapter.adapt(player));
+                    if (playerSession == null) {
+                        StarColors.coloredMessage(player, "&cYou do not have a WorldEdit Session");
+                        return true;
+                    }
+                    
+                    Region selection;
+                    try {
+                        selection = playerSession.getSelection(BukkitAdapter.adapt(player.getWorld()));
+                    } catch (IncompleteRegionException e) {
+                        StarColors.coloredMessage(sender, "&cYou have an incomplete selection.");
+                        return true;
+                    }
+                    
                     if (selection == null) {
                         StarColors.coloredMessage(player, "&cYou must have a WorldEdit selection");
                         return true;
                     }
 
-                    if (!(selection instanceof CuboidSelection cuboidRegion)) {
+                    if (!(selection instanceof CuboidRegion cuboidRegion)) {
                         StarColors.coloredMessage(player, "&cThe selection must be cuboid");
                         return true;
                     }
@@ -262,8 +273,8 @@ public class SGMapCommand implements CommandExecutor {
                         return true;
                     }
                     
-                    Location min = cuboidRegion.getMinimumPoint();
-                    Location max = cuboidRegion.getMaximumPoint();
+                    Location min = BukkitAdapter.adapt(player.getWorld(), cuboidRegion.getMinimumPoint());
+                    Location max = BukkitAdapter.adapt(player.getWorld(), cuboidRegion.getMaximumPoint());
                     
                     Position minimum = new Position(min.getBlockX(), min.getBlockY(), min.getBlockZ());
                     Position maximum = new Position(max.getBlockX(), max.getBlockY(), max.getBlockZ());
@@ -294,14 +305,11 @@ public class SGMapCommand implements CommandExecutor {
                     MapSpawn spawn = new MapSpawn(0, -1, location.getBlockX(), location.getBlockY(), location.getBlockZ());
                     int position = gameMap.addSpawn(spawn);
                     Location blockLocation = spawn.toBlockLocation(gameMap.getWorld());
-//                    player.teleport(location.clone().add(0, 1, 0));
-//                    blockLocation.getBlock().setType(Material.BEDROCK);
                     spawn.updateHologram(gameMap.getWorld());
                     sender.sendMessage(StarColors.color("&eYou added a spawn with index &b" + (position + 1) + " &eto the map &b" + gameMap.getName()));
                 }
                 case "clearspawns" -> {
                     for (MapSpawn spawn : gameMap.getSpawns()) {
-//                        spawn.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
                         spawn.deleteHologram();
                         gameMap.clearSpawns();
                     }
@@ -322,7 +330,6 @@ public class SGMapCommand implements CommandExecutor {
 
                     MapSpawn existingSpawnPosition = gameMap.getSpawn(position - 1);
                     if (existingSpawnPosition != null) {
-//                        existingSpawnPosition.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
                         existingSpawnPosition.deleteHologram();
                     }
                     
@@ -344,8 +351,6 @@ public class SGMapCommand implements CommandExecutor {
                     }
                     gameMap.setSpawn(position - 1, mapSpawn);
                     Location blockLocation = mapSpawn.toBlockLocation(gameMap.getWorld());
-//                    player.teleport(location.clone().add(0, 1, 0));
-//                    blockLocation.getBlock().setType(Material.BEDROCK);
                     mapSpawn.updateHologram(gameMap.getWorld());
                     sender.sendMessage(StarColors.color("&eYou set the spawn at position &b" + position + " &eto your location in the map &b" + gameMap.getName()));
                 }
@@ -374,60 +379,6 @@ public class SGMapCommand implements CommandExecutor {
                     gameMap.removeSpawn(position - 1);
                     MsgType.INFO.send(player, "You removed the spawn with the index %v", position);
                     MsgType.INFO.send(player, "Spawns have been recalculated");
-                }
-                case "calculatespawns", "cs" -> {
-                    if (!(args.length > argIndex)) {
-                        sender.sendMessage(StarColors.color("&cYou must provide a type to search for."));
-                        return true;
-                    }
-                    
-                    Material spawnBlockType;
-                    
-                    if (args[argIndex].equalsIgnoreCase("hand")) {
-                        ItemStack handItem = player.getInventory().getItemInHand();
-                        if (handItem == null) {
-                            MsgType.WARN.send(player, "You are not holding a valid item");
-                            return true;
-                        }
-                        
-                        spawnBlockType = handItem.getType();
-                    } else {
-                        try {
-                            spawnBlockType = Material.valueOf(args[argIndex].toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            MsgType.WARN.send(player, "Invalid material type %v", args[argIndex]);
-                            return true;
-                        }
-                    }
-                    
-                    Selection selection = WorldEditPlugin.getPlugin(WorldEditPlugin.class).getSelection(player);
-                    if (selection == null) {
-                        StarColors.coloredMessage(player, "&cYou must have a WorldEdit selection");
-                        return true;
-                    }
-
-                    if (!(selection instanceof CuboidSelection cuboidSelection)) {
-                        StarColors.coloredMessage(player, "&cThe selection must be cuboid");
-                        return true;
-                    }
-
-                    try {
-                        for (BlockVector blockVector : cuboidSelection.getRegionSelector().getRegion()) {
-                            Block block = gameMap.getWorld().getBlockAt(blockVector.getBlockX(), blockVector.getBlockY(), blockVector.getBlockZ());
-                            if (block.getType() == spawnBlockType) {
-                                Location location = block.getLocation();
-                                MapSpawn spawn = new MapSpawn(0, -1, location.getBlockX(), location.getBlockY() + 1, location.getBlockZ());
-                                int position = gameMap.addSpawn(spawn);
-//                                Location blockLocation = spawn.toBlockLocation(gameMap.getWorld());
-//                                blockLocation.getBlock().setType(Material.BEDROCK);
-                                spawn.updateHologram(gameMap.getWorld());
-                                sender.sendMessage(StarColors.color("&eYou added a spawn with index &b" + (position + 1) + " &eto the map &b" + gameMap.getName()));
-                            }
-                        }
-                    } catch (IncompleteRegionException e) {
-                        MsgType.WARN.send(player, "Your WorldEdit selection is incomplete");
-                        return true;
-                    }
                 }
                 case "setspawncenter", "ssc" -> {
                     Location centerLocation = gameMap.getCenterLocation();
@@ -575,7 +526,6 @@ public class SGMapCommand implements CommandExecutor {
 
                             if (!finalGameMap.getSpawns().isEmpty()) {
                                 for (MapSpawn mapSpawn : finalGameMap.getSpawns()) {
-//                                    mapSpawn.toBlockLocation(finalGameMap.getWorld()).getBlock().setType(Material.BEDROCK);
                                     mapSpawn.updateHologram(finalGameMap.getWorld());
                                 }
                             }
@@ -621,7 +571,7 @@ public class SGMapCommand implements CommandExecutor {
         PlayerInventory inv = player.getInventory();
         inv.clear();
         
-        inv.addItem(new ItemStack(Material.WOOD_AXE)); //This is the world edit wand
+        inv.addItem(new ItemStack(Material.WOODEN_AXE)); //This is the world edit wand
         inv.addItem(SAVE_ITEM.toItemStack());
         inv.addItem(SET_BOUNDS_ARENA_ITEM.toItemStack());
         inv.addItem(SET_BOUNDS_DEATHMATCH_ITEM.toItemStack());

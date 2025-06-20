@@ -1,6 +1,6 @@
 package com.thenexusreborn.gamemaps.tasks;
 
-import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.stardevllc.starcore.utils.Position;
 import com.thenexusreborn.gamemaps.model.SGMap;
@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.BlockVector;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,8 +39,8 @@ public class AnalyzeThread extends BukkitRunnable {
     }
 
     public void run() {
-        for (BlockVector vector : region) {
-            Block block = gameMap.getWorld().getBlockAt(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+        for (BlockVector3 vector : region) {
+            Block block = gameMap.getWorld().getBlockAt(vector.x(), vector.y(), vector.z());
             
             Material type = block.getType();
             
@@ -59,9 +60,9 @@ public class AnalyzeThread extends BukkitRunnable {
         }
         
         this.chests = this.materialCounts.getOrDefault(Material.CHEST, 0) + this.materialCounts.getOrDefault(Material.TRAPPED_CHEST, 0);
-        this.enchantTables = this.materialCounts.getOrDefault(Material.ENCHANTMENT_TABLE, 0);
-        this.workbenches = this.materialCounts.getOrDefault(Material.WORKBENCH, 0);
-        this.furnaces = this.materialCounts.getOrDefault(Material.FURNACE, 0) + this.materialCounts.getOrDefault(Material.BURNING_FURNACE, 0);
+        this.enchantTables = this.materialCounts.getOrDefault(Material.ENCHANTING_TABLE, 0);
+        this.workbenches = this.materialCounts.getOrDefault(Material.CRAFTING_TABLE, 0);
+        this.furnaces = this.materialCounts.getOrDefault(Material.FURNACE, 0) + this.materialCounts.getOrDefault(Material.FURNACE, 0);
         
         updateGameMapValues();
         

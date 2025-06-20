@@ -1,8 +1,7 @@
 package com.thenexusreborn.gamemaps.model;
 
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitUtil;
-import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.stardevllc.helper.FileHelper;
@@ -472,9 +471,9 @@ public class SGMap {
                     uniqueId = UUID.randomUUID();
                     worldName = uniqueId.toString();
                 } else {
-                    worldName = this.name;
+                    worldName = this.name.replace(" ", "_").replace("'", "");
                 }
-                this.prefix = (prefix != null) ? prefix : "";
+                this.prefix = prefix != null ? prefix : "";
                 this.worldFolder = FileHelper.subPath(Bukkit.getServer().getWorldContainer().toPath(), this.prefix + worldName);
                 FileHelper.createDirectoryIfNotExists(worldFolder);
                 FileHelper.copyFolder(this.unzippedFolder, worldFolder);
@@ -489,10 +488,12 @@ public class SGMap {
     public boolean load(JavaPlugin plugin) {
         try {
             if (this.worldFolder != null) {
-                this.world = Bukkit.createWorld(new WorldCreator(this.prefix + this.name));
+                String name = this.prefix + this.name.replace(" ", "_").replace("'", "");
+                this.world = Bukkit.createWorld(new WorldCreator(name));
                 return this.world != null;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
         return false;
@@ -543,13 +544,13 @@ public class SGMap {
         if (world == null) {
             return null;
         }
-
-        Vector min = new Vector(this.arenaMinimum.getX(), this.arenaMinimum.getY(), this.arenaMinimum.getZ());
-        Vector max = new Vector(this.arenaMaximum.getX(), this.arenaMaximum.getY(), this.arenaMaximum.getZ());
-
-        com.sk89q.worldedit.world.World bukkitWorld = BukkitUtil.getLocalWorld(this.world);
-
-        this.arenaRegion = new CuboidRegion(bukkitWorld, min, max);
+        
+        BlockVector3 min = new BlockVector3(this.arenaMinimum.getBlockX(), this.arenaMinimum.getBlockY(), this.arenaMinimum.getBlockZ());
+        BlockVector3 max = new BlockVector3(this.arenaMaximum.getBlockX(), this.arenaMaximum.getBlockY(), this.arenaMaximum.getBlockZ());
+        
+        com.sk89q.worldedit.world.World adaptedWorld = BukkitAdapter.adapt(this.world);
+        
+        this.arenaRegion = new CuboidRegion(adaptedWorld, min, max);
         return arenaRegion;
     }
 
@@ -561,11 +562,11 @@ public class SGMap {
         if (world == null) {
             return null;
         }
+        
+        BlockVector3 min = new BlockVector3(this.deathmatchMinimum.getBlockX(), this.deathmatchMinimum.getBlockY(), this.deathmatchMinimum.getBlockZ());
+        BlockVector3 max = new BlockVector3(this.deathmatchMaximum.getBlockX(), this.deathmatchMaximum.getBlockY(), this.deathmatchMaximum.getBlockZ());
 
-        Vector min = new Vector(this.deathmatchMinimum.getX(), this.deathmatchMinimum.getY(), this.deathmatchMinimum.getZ());
-        Vector max = new Vector(this.deathmatchMaximum.getX(), this.deathmatchMaximum.getY(), this.deathmatchMaximum.getZ());
-
-        com.sk89q.worldedit.world.World bukkitWorld = new BukkitWorld(this.world);
+        com.sk89q.worldedit.world.World bukkitWorld = BukkitAdapter.adapt(this.world);
 
         this.deathmatchRegion = new CuboidRegion(bukkitWorld, min, max);
         return deathmatchRegion;
