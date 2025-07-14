@@ -6,7 +6,7 @@ import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.stardevllc.helper.FileHelper;
-import com.stardevllc.starcore.utils.Position;
+import com.stardevllc.starmclib.Position;
 import com.thenexusreborn.api.NexusReborn;
 import com.thenexusreborn.api.player.NexusPlayer;
 import com.thenexusreborn.api.sql.annotations.column.*;

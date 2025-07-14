@@ -1,6 +1,6 @@
 package com.thenexusreborn.gamemaps.model;
 
-import com.stardevllc.starcore.utils.Position;
+import com.stardevllc.starmclib.Position;
 import com.thenexusreborn.api.sql.annotations.column.ColumnIgnored;
 import com.thenexusreborn.api.sql.annotations.table.TableName;
 import eu.decentsoftware.holograms.api.DHAPI;

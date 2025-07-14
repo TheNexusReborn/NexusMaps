@@ -1,10 +1,10 @@
 package com.thenexusreborn.gamemaps.items;
 
-import com.stardevllc.starcore.api.XMaterial;
 import com.stardevllc.starcore.api.itembuilder.ItemBuilder;
 import com.stardevllc.staritems.StarItems;
 import com.stardevllc.staritems.model.CustomItem;
 import com.stardevllc.staritems.model.types.PlayerEvent;
+import com.stardevllc.starmclib.XMaterial;
 import com.thenexusreborn.gamemaps.NexusGameMaps;
 import org.bukkit.event.block.Action;
 

@@ -2,7 +2,7 @@ package com.thenexusreborn.gamemaps.tasks;
 
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.regions.CuboidRegion;
-import com.stardevllc.starcore.utils.Position;
+import com.stardevllc.starmclib.Position;
 import com.thenexusreborn.gamemaps.model.SGMap;
 import com.thenexusreborn.nexuscore.util.MsgType;
 import org.bukkit.Material;
@@ -11,10 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AnalyzeThread extends BukkitRunnable {
 
@@ -25,7 +22,7 @@ public class AnalyzeThread extends BukkitRunnable {
     private int totalBlocks, chests, enchantTables, workbenches, furnaces;
     private Set<Position> echestLocs = new HashSet<>();
 
-    private Map<Material, Integer> materialCounts = new HashMap<>();
+    private Map<Material, Integer> materialCounts = new EnumMap<>(Material.class);
     
     private CuboidRegion region;
 
@@ -43,11 +40,8 @@ public class AnalyzeThread extends BukkitRunnable {
             
             Material type = block.getType();
             
-            if (this.materialCounts.containsKey(type)) {
-                this.materialCounts.put(type, this.materialCounts.get(type) + 1);
-            } else {
-                this.materialCounts.put(type, 1);
-            }
+            this.materialCounts.putIfAbsent(type, 0);
+            this.materialCounts.compute(type, (t, c) -> c + 1);
             
             if (type == Material.ENDER_CHEST) {
                 this.echestLocs.add(Position.fromLocation(block.getLocation()));
