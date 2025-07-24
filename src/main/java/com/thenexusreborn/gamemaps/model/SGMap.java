@@ -5,7 +5,7 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
-import com.stardevllc.helper.FileHelper;
+import com.stardevllc.starlib.helper.FileHelper;
 import com.stardevllc.starmclib.Position;
 import com.thenexusreborn.api.NexusReborn;
 import com.thenexusreborn.api.player.NexusPlayer;
@@ -474,7 +474,7 @@ public class SGMap {
                 } else {
                     worldName = this.name;
                 }
-                this.prefix = (prefix != null) ? prefix : "";
+                this.prefix = prefix != null ? prefix : "";
                 this.worldFolder = FileHelper.subPath(Bukkit.getServer().getWorldContainer().toPath(), this.prefix + worldName);
                 FileHelper.createDirectoryIfNotExists(worldFolder);
                 FileHelper.copyFolder(this.unzippedFolder, worldFolder);
