@@ -5,10 +5,10 @@ import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.stardevllc.smaterial.SMaterial;
 import com.stardevllc.starcore.api.StarColors;
 import com.stardevllc.staritems.model.CustomItem;
 import com.stardevllc.starmclib.Position;
-import com.stardevllc.starmclib.XMaterial;
 import com.thenexusreborn.gamemaps.items.CmdItem;
 import com.thenexusreborn.gamemaps.model.MapSpawn;
 import com.thenexusreborn.gamemaps.model.SGMap;
@@ -28,14 +28,14 @@ public class SGMapCommand implements CommandExecutor {
     private JavaPlugin plugin;
     private MapManager mapManager;
     
-    public static final CustomItem SAVE_ITEM = new CmdItem("Save", XMaterial.PAPER, "sgmap save");
-    public static final CustomItem SET_BOUNDS_ARENA_ITEM = new CmdItem("Set Arena Bounds", XMaterial.OAK_FENCE, "sgmap setbounds arena");
-    public static final CustomItem SET_BOUNDS_DEATHMATCH_ITEM = new CmdItem("Set Deathmatch Bounds", XMaterial.OAK_FENCE_GATE, "sgmap setbounds deathmatch");
-    public static final CustomItem ADD_SPAWN_ITEM = new CmdItem("Add Spawn", XMaterial.RED_BED, "sgmap addspawn");
-    public static final CustomItem SET_SPAWN_CENTER_ITEM = new CmdItem("Set Center", XMaterial.COMPASS, "sgmap setspawncenter");
-    public static final CustomItem SET_SWAG_SHACK_ITEM = new CmdItem("Set Swag Shack", XMaterial.CHEST, "sgmap setswagshack");
-    public static final CustomItem VIEW_ARENA_BORDER = new CmdItem("View Arena Border", XMaterial.GLASS, "sgmap viewborder game");
-    public static final CustomItem VIEW_DEATHMATCH_BORDER = new CmdItem("View Deathmatch Border", XMaterial.WHITE_WOOL, "sgmap viewborder deathmatch");
+    public static final CustomItem SAVE_ITEM = new CmdItem("Save", SMaterial.PAPER, "sgmap save");
+    public static final CustomItem SET_BOUNDS_ARENA_ITEM = new CmdItem("Set Arena Bounds", SMaterial.OAK_FENCE, "sgmap setbounds arena");
+    public static final CustomItem SET_BOUNDS_DEATHMATCH_ITEM = new CmdItem("Set Deathmatch Bounds", SMaterial.OAK_FENCE_GATE, "sgmap setbounds deathmatch");
+    public static final CustomItem ADD_SPAWN_ITEM = new CmdItem("Add Spawn", SMaterial.RED_BED, "sgmap addspawn");
+    public static final CustomItem SET_SPAWN_CENTER_ITEM = new CmdItem("Set Center", SMaterial.COMPASS, "sgmap setspawncenter");
+    public static final CustomItem SET_SWAG_SHACK_ITEM = new CmdItem("Set Swag Shack", SMaterial.CHEST, "sgmap setswagshack");
+    public static final CustomItem VIEW_ARENA_BORDER = new CmdItem("View Arena Border", SMaterial.GLASS, "sgmap viewborder game");
+    public static final CustomItem VIEW_DEATHMATCH_BORDER = new CmdItem("View Deathmatch Border", SMaterial.WHITE_WOOL, "sgmap viewborder deathmatch");
     
     private static final String URL_BASE = "https://assets.thenexusreborn.com/survivalgames/maps/";
     
