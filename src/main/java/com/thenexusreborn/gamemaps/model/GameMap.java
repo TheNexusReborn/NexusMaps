@@ -178,7 +178,7 @@ public class GameMap {
     }
 
     public String getName() {
-        if (this.name.contains("''")) {
+        if (this.name != null && this.name.contains("''")) {
             this.name = name.replace("''", "'");
         }
         return name;
