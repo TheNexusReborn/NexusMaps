@@ -1,14 +1,10 @@
 package com.thenexusreborn.gamemaps.model;
 
-import com.thenexusreborn.api.sql.annotations.table.TableName;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-@TableName("sgmapratings")
 public class MapRating implements ConfigurationSerializable {
     
     static {

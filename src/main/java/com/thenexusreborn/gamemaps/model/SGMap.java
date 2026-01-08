@@ -1,57 +1,33 @@
 package com.thenexusreborn.gamemaps.model;
 
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.stardevllc.starlib.helper.FileHelper;
 import com.stardevllc.starmclib.Position;
-import com.thenexusreborn.api.NexusReborn;
-import com.thenexusreborn.api.player.NexusPlayer;
-import com.thenexusreborn.api.sql.annotations.column.*;
+import com.thenexusreborn.api.sql.annotations.column.ColumnIgnored;
 import com.thenexusreborn.api.sql.annotations.table.TableHandler;
 import com.thenexusreborn.api.sql.annotations.table.TableName;
-import com.thenexusreborn.api.sql.objects.codecs.StringSetCodec;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-@TableName(value = "sgmaps")
-@TableHandler(GameMapObjectHandler.class)
-public class SGMap {
-    private long id;
-    private String url;
-    private String name;
-    private String prefix;
-
+@SuppressWarnings("unused")
+@TableName("sgmaps")
+@TableHandler(SGMapObjectHandler.class)
+public class SGMap extends GameMap {
     @ColumnIgnored
     private Set<MapSpawn> spawns = new LinkedHashSet<>();
-    @ColumnType("varchar(1000)")
-    @ColumnCodec(StringSetCodec.class)
-    private Set<String> creators = new HashSet<>();
-    private boolean active;
     @ColumnIgnored
     private Map<UUID, MapRating> ratings = new HashMap<>();
     private Position swagShack;
     
     private Set<Position> enderChestLocations = new HashSet<>();
-
-    //This is the center of the spawns for the arena, where spectators will spawn in
-    //And where players will look at when teleported to a game spawn
-    private Position spawnCenter;
-
-    private Position arenaMinimum;
-    private Position arenaMaximum;
-    private Position arenaCenter;
 
     //This is the length of the sides of the world border for the arena
     private int arenaBorderLength;
@@ -67,18 +43,7 @@ public class SGMap {
     private int chests, enchantTables, workbenches, furnaces, totalBlocks;
 
     @ColumnIgnored
-    private UUID uniqueId;
-    @ColumnIgnored
-    private World world;
-
-    @ColumnIgnored
-    private Path downloadedZip, unzippedFolder, worldFolder;
-    @ColumnIgnored
-    private boolean editing;
-    @ColumnIgnored
-    private int votes;
-    @ColumnIgnored
-    private CuboidRegion deathmatchRegion, arenaRegion;
+    private CuboidRegion deathmatchRegion;
     @ColumnIgnored
     private Region borderRegion;
     @ColumnIgnored
@@ -88,11 +53,7 @@ public class SGMap {
     }
 
     public boolean isValid() {
-        if (this.url == null || this.url.isEmpty()) {
-            return false;
-        }
-        
-        if (this.name == null || this.name.isEmpty()) {
+        if (!super.isValid()) {
             return false;
         }
         
@@ -100,15 +61,7 @@ public class SGMap {
             return false;
         }
         
-        if (this.creators.isEmpty()) {
-            return false;
-        }
-        
-        if (this.spawnCenter == null) {
-            return false;
-        }
-        
-        if (this.arenaMinimum == null || this.arenaMaximum == null || this.arenaCenter == null || this.arenaBorderLength == 0) {
+        if (this.arenaBorderLength == 0) {
             return false;
         }
         
@@ -119,15 +72,7 @@ public class SGMap {
         this.url = fileName;
         this.name = name;
     }
-
-    public Position getArenaCenter() {
-        return arenaCenter;
-    }
-
-    public void setArenaCenter(Position arenaCenter) {
-        this.arenaCenter = arenaCenter;
-    }
-
+    
     public Position getDeathmatchCenter() {
         return deathmatchCenter;
     }
@@ -151,31 +96,7 @@ public class SGMap {
     public void setDeathmatchBorderLength(int deathmatchBorderLength) {
         this.deathmatchBorderLength = deathmatchBorderLength;
     }
-
-    public Position getSpawnCenter() {
-        return spawnCenter;
-    }
-
-    public void setSpawnCenter(Position spawnCenter) {
-        this.spawnCenter = spawnCenter;
-    }
-
-    public Position getArenaMinimum() {
-        return arenaMinimum;
-    }
-
-    public void setArenaMinimum(Position arenaMinimum) {
-        this.arenaMinimum = arenaMinimum;
-    }
-
-    public Position getArenaMaximum() {
-        return arenaMaximum;
-    }
-
-    public void setArenaMaximum(Position arenaMaximum) {
-        this.arenaMaximum = arenaMaximum;
-    }
-
+    
     public Position getDeathmatchMinimum() {
         return deathmatchMinimum;
     }
@@ -190,16 +111,6 @@ public class SGMap {
 
     public void setDeathmatchMaximum(Position deathmathMaximum) {
         this.deathmatchMaximum = deathmathMaximum;
-    }
-
-    public Location getCenterLocation() {
-        if (this.world != null) {
-            if (this.spawnCenter != null) {
-                return getSpawnCenter().toLocation(this.world);
-            }
-        }
-
-        return null;
     }
 
     public void recalculateSpawns() {
@@ -251,40 +162,11 @@ public class SGMap {
 
     public void removeFromServer(JavaPlugin plugin) {
         try {
-            uniqueId = null;
-//            if (downloadedZip != null) {
-//                Files.deleteIfExists(downloadedZip);
-//                downloadedZip = null;
-//            }
-            
             for (MapSpawn spawn : this.spawns) {
                 spawn.deleteHologram();
             }
-
-            if (this.world != null) {
-                for (Player player : world.getPlayers()) {
-                    NexusPlayer nexusPlayer = NexusReborn.getPlayerManager().getNexusPlayer(player.getUniqueId());
-                    if (nexusPlayer != null) {
-                        nexusPlayer.getServer().teleportToSpawn(player.getUniqueId());
-                    }
-                }
-
-                boolean success = Bukkit.unloadWorld(world, false);
-                if (!success) {
-                    plugin.getLogger().severe("Failed to unload world for map " + this.name);
-                }
-                world = null;
-            }
-
-            if (Files.exists(worldFolder)) {
-                FileHelper.deleteDirectory(worldFolder);
-                worldFolder = null;
-            }
-
-            if (Files.exists(unzippedFolder)) {
-                FileHelper.deleteDirectory(unzippedFolder);
-                unzippedFolder = null;
-            }
+            
+            super.removeFromServer(plugin);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -308,19 +190,7 @@ public class SGMap {
         }
         return downloadedZip != null && Files.exists(downloadedZip);
     }
-
-    public void addCreator(String creator) {
-        this.creators.add(creator);
-    }
-
-    public void addCreators(String... creators) {
-        this.creators.addAll(Arrays.asList(creators));
-    }
-
-    public void removeCreator(String creator) {
-        this.creators.remove(creator);
-    }
-
+    
     public void setSpawns(Collection<MapSpawn> spawns) {
         this.spawns.clear();
         this.spawns.addAll(spawns);
@@ -348,26 +218,7 @@ public class SGMap {
         this.spawns.removeIf(spawn -> spawn.getIndex() == index);
         recalculateSpawns();
     }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getName() {
-        if (this.name.contains("''")) {
-            this.name = name.replace("''", "'");
-        }
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    
     public List<MapSpawn> getSpawns() {
         return new LinkedList<>(spawns);
     }
@@ -375,184 +226,12 @@ public class SGMap {
     public void clearSpawns() {
         this.spawns.clear();
     }
-
-    public Set<String> getCreators() {
-        return creators;
-    }
-
-    public UUID getUniqueId() {
-        return uniqueId;
-    }
-
-    public void setUniqueId(UUID uniqueId) {
-        this.uniqueId = uniqueId;
-    }
-
-    public World getWorld() {
-        return world;
-    }
-
-    public void setWorld(World world) {
-        this.world = world;
-    }
-
-    public Path getDownloadedZip() {
-        return downloadedZip;
-    }
-
-    public void setDownloadedZip(Path downloadedZip) {
-        this.downloadedZip = downloadedZip;
-    }
-
-    public boolean unzip(JavaPlugin plugin) {
-        Path unzippedMapsFolder = FileHelper.subPath(plugin.getDataFolder().toPath(), "unzippedmaps");
-        unzippedFolder = FileHelper.subPath(unzippedMapsFolder, this.name);
-        FileHelper.createDirectoryIfNotExists(unzippedFolder);
-        byte[] buffer = new byte[1024];
-        try {
-            ZipInputStream zis = new ZipInputStream(Files.newInputStream(this.downloadedZip.toFile().toPath()));
-            ZipEntry zipEntry = zis.getNextEntry();
-
-            while (zipEntry != null) {
-                Path newFile = newFile(unzippedFolder.toFile(), zipEntry);
-                if (zipEntry.isDirectory()) {
-                    FileHelper.createDirectoryIfNotExists(newFile);
-                } else {
-                    // fix for Windows-created archives
-                    Path parent = newFile.getParent();
-                    if (!Files.isDirectory(parent)) {
-                        FileHelper.createDirectoryIfNotExists(parent);
-                        if (Files.notExists(parent)) {
-                            throw new IOException("Failed to create directory " + parent);
-                        }
-                    }
-
-                    // write file content
-                    FileOutputStream fos = new FileOutputStream(newFile.toFile());
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
-                    }
-                    fos.close();
-                }
-                zipEntry = zis.getNextEntry();
-            }
-            zis.closeEntry();
-            zis.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            unzippedFolder = null;
-            return false;
-        }
-        return true;
-    }
-
-    public Path getUnzippedFolder() {
-        return unzippedFolder;
-    }
-
-    private Path newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
-        Path path = FileHelper.subPath(destinationDir.toPath(), zipEntry.getName());
-
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = path.toFile().getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
-        }
-
-        return path;
-    }
-
-    public boolean copyFolder(JavaPlugin plugin, String prefix, boolean randomizeName) {
-        try {
-            if (this.unzippedFolder != null) {
-                String worldName;
-                if (randomizeName) {
-                    uniqueId = UUID.randomUUID();
-                    worldName = uniqueId.toString();
-                } else {
-                    worldName = this.name;
-                }
-                this.prefix = prefix != null ? prefix : "";
-                this.worldFolder = FileHelper.subPath(Bukkit.getServer().getWorldContainer().toPath(), this.prefix + worldName);
-                FileHelper.createDirectoryIfNotExists(worldFolder);
-                FileHelper.copyFolder(this.unzippedFolder, worldFolder);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    public boolean load(JavaPlugin plugin) {
-        try {
-            if (this.worldFolder != null) {
-                this.world = Bukkit.createWorld(new WorldCreator(this.prefix + this.name));
-                return this.world != null;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        return false;
-    }
-
-    public void setEditing(boolean editing) {
-        this.editing = editing;
-    }
-
-    public boolean isEditing() {
-        return editing;
-    }
-
-    public int getVotes() {
-        return votes;
-    }
-
-    public void setVotes(int votes) {
-        this.votes = votes;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        if (active) {
-            this.active = isValid();
-        } else {
-            this.active = false;
-        }
-    }
-
-    public long getId() {
-        return id;
-    }
-
+    
     public void setId(long id) {
-        this.id = id;
+        super.setId(id);
         this.spawns.forEach(spawn -> spawn.setMapId(id));
     }
-
-    public CuboidRegion getArenaRegion() {
-        if (this.arenaRegion != null) {
-            return this.arenaRegion;
-        }
-
-        if (world == null) {
-            return null;
-        }
-
-        Vector min = new Vector(this.arenaMinimum.getX(), this.arenaMinimum.getY(), this.arenaMinimum.getZ());
-        Vector max = new Vector(this.arenaMaximum.getX(), this.arenaMaximum.getY(), this.arenaMaximum.getZ());
-
-        com.sk89q.worldedit.world.World bukkitWorld = BukkitUtil.getLocalWorld(this.world);
-
-        this.arenaRegion = new CuboidRegion(bukkitWorld, min, max);
-        return arenaRegion;
-    }
-
+    
     public CuboidRegion getDeathmatchRegion() {
         if (this.deathmatchRegion != null) {
             return this.deathmatchRegion;
@@ -573,7 +252,7 @@ public class SGMap {
 
     @Override
     public String toString() {
-        return "GameMap{" +
+        return "SGMap{" +
                 "id=" + id +
                 ", url='" + url + '\'' +
                 ", name='" + name + '\'' +
@@ -765,15 +444,6 @@ public class SGMap {
     public void addRating(MapRating rating) {
         this.ratings.put(rating.getPlayer(), rating);
     }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
-    }
-
-    public void setCreators(Collection<String> creators) {
-        this.creators.clear();
-        this.creators.addAll(creators);
-    }
     
     public MapSpawn getSpawn(int position) {
         for (MapSpawn spawn : this.spawns) {
@@ -832,43 +502,34 @@ public class SGMap {
         config.set("stats.totalblocks", this.totalBlocks);
     }
     
-    public void copyFrom(SGMap other) {
-        this.url = other.url;
-        this.name = other.name;
-        this.prefix = other.prefix;
+    public void copyFrom(GameMap other) {
+        super.copyFrom(other);
 
-        this.spawns.clear();
         
-        for (MapSpawn spawn : other.spawns) {
-            addSpawn(spawn.clone());
+        if (other instanceof SGMap otherMap) {
+            this.spawns.clear();
+            
+            for (MapSpawn spawn : otherMap.spawns) {
+                addSpawn(spawn.clone());
+            }
+            
+            for (Position enderChestLocation : otherMap.enderChestLocations) {
+                this.addEnderChestLocation(enderChestLocation.clone());
+            }
+            
+            this.swagShack = otherMap.swagShack == null ? null : otherMap.swagShack.clone();
+            this.arenaBorderLength = otherMap.arenaBorderLength;
+            this.deathmatchMinimum = otherMap.deathmatchMinimum == null ? null : otherMap.deathmatchMinimum.clone();
+            this.deathmatchMaximum = otherMap.deathmatchMaximum == null ? null : otherMap.deathmatchMaximum.clone();
+            this.deathmatchCenter = otherMap.deathmatchCenter == null ? null : otherMap.deathmatchCenter.clone();
+            this.deathmatchBorderLength = otherMap.deathmatchBorderLength;
+            
+            this.chests = otherMap.chests;
+            this.enchantTables = otherMap.enchantTables;
+            this.workbenches = otherMap.workbenches;
+            this.furnaces = otherMap.furnaces;
+            this.totalBlocks = otherMap.totalBlocks;
         }
-
-        for (Position enderChestLocation : other.enderChestLocations) {
-            this.addEnderChestLocation(enderChestLocation.clone());
-        }
-        
-        this.creators.clear();
-        this.creators.addAll(other.creators);
-        
-        this.active = other.active;
-        this.swagShack = other.swagShack == null ? null : other.swagShack.clone();
-        this.spawnCenter = other.spawnCenter == null ? null : other.spawnCenter.clone();
-
-        this.arenaMinimum = other.arenaMinimum == null ? null : other.arenaMinimum.clone();
-        this.arenaMaximum = other.arenaMaximum == null ? null : other.arenaMaximum.clone();
-        this.arenaCenter = other.arenaCenter == null ? null : other.arenaCenter.clone();
-        this.arenaBorderLength = other.arenaBorderLength;
-
-        this.deathmatchMinimum = other.deathmatchMinimum == null ? null : other.deathmatchMinimum.clone();
-        this.deathmatchMaximum = other.deathmatchMaximum == null ? null : other.deathmatchMaximum.clone();
-        this.deathmatchCenter = other.deathmatchCenter == null ? null : other.deathmatchCenter.clone();
-        this.deathmatchBorderLength = other.deathmatchBorderLength;
-        
-        this.chests = other.chests;
-        this.enchantTables = other.enchantTables;
-        this.workbenches = other.workbenches;
-        this.furnaces = other.furnaces;
-        this.totalBlocks = other.totalBlocks;
     }
 
     public void setEnderChests(Set<Position> echestLocs) {

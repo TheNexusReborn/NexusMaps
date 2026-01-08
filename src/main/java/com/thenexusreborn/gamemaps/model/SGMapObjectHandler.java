@@ -7,8 +7,8 @@ import com.thenexusreborn.api.sql.objects.Table;
 import java.sql.SQLException;
 import java.util.List;
 
-public class GameMapObjectHandler extends ObjectHandler {
-    public GameMapObjectHandler(Object object, SQLDatabase database, Table table) {
+public class SGMapObjectHandler extends ObjectHandler {
+    public SGMapObjectHandler(Object object, SQLDatabase database, Table table) {
         super(object, database, table);
     }
     

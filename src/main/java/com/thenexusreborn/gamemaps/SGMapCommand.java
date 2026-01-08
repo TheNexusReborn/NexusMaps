@@ -293,15 +293,11 @@ public class SGMapCommand implements CommandExecutor {
                     Location location = player.getLocation();
                     MapSpawn spawn = new MapSpawn(0, -1, location.getBlockX(), location.getBlockY(), location.getBlockZ());
                     int position = gameMap.addSpawn(spawn);
-                    Location blockLocation = spawn.toBlockLocation(gameMap.getWorld());
-//                    player.teleport(location.clone().add(0, 1, 0));
-//                    blockLocation.getBlock().setType(Material.BEDROCK);
                     spawn.updateHologram(gameMap.getWorld());
                     sender.sendMessage(StarColors.color("&eYou added a spawn with index &b" + (position + 1) + " &eto the map &b" + gameMap.getName()));
                 }
                 case "clearspawns" -> {
                     for (MapSpawn spawn : gameMap.getSpawns()) {
-//                        spawn.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
                         spawn.deleteHologram();
                         gameMap.clearSpawns();
                     }
@@ -322,7 +318,6 @@ public class SGMapCommand implements CommandExecutor {
 
                     MapSpawn existingSpawnPosition = gameMap.getSpawn(position - 1);
                     if (existingSpawnPosition != null) {
-//                        existingSpawnPosition.toBlockLocation(gameMap.getWorld()).getBlock().setType(Material.AIR);
                         existingSpawnPosition.deleteHologram();
                     }
                     
@@ -343,9 +338,6 @@ public class SGMapCommand implements CommandExecutor {
                         mapSpawn.setIndex(position - 1);
                     }
                     gameMap.setSpawn(position - 1, mapSpawn);
-                    Location blockLocation = mapSpawn.toBlockLocation(gameMap.getWorld());
-//                    player.teleport(location.clone().add(0, 1, 0));
-//                    blockLocation.getBlock().setType(Material.BEDROCK);
                     mapSpawn.updateHologram(gameMap.getWorld());
                     sender.sendMessage(StarColors.color("&eYou set the spawn at position &b" + position + " &eto your location in the map &b" + gameMap.getName()));
                 }
@@ -418,8 +410,6 @@ public class SGMapCommand implements CommandExecutor {
                                 Location location = block.getLocation();
                                 MapSpawn spawn = new MapSpawn(0, -1, location.getBlockX(), location.getBlockY() + 1, location.getBlockZ());
                                 int position = gameMap.addSpawn(spawn);
-//                                Location blockLocation = spawn.toBlockLocation(gameMap.getWorld());
-//                                blockLocation.getBlock().setType(Material.BEDROCK);
                                 spawn.updateHologram(gameMap.getWorld());
                                 sender.sendMessage(StarColors.color("&eYou added a spawn with index &b" + (position + 1) + " &eto the map &b" + gameMap.getName()));
                             }
@@ -575,7 +565,6 @@ public class SGMapCommand implements CommandExecutor {
 
                             if (!finalGameMap.getSpawns().isEmpty()) {
                                 for (MapSpawn mapSpawn : finalGameMap.getSpawns()) {
-//                                    mapSpawn.toBlockLocation(finalGameMap.getWorld()).getBlock().setType(Material.BEDROCK);
                                     mapSpawn.updateHologram(finalGameMap.getWorld());
                                 }
                             }
