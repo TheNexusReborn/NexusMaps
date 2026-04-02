@@ -13,8 +13,10 @@ public class CmdItem extends CustomItem {
     private static final NexusGameMaps plugin = NexusGameMaps.getPlugin(NexusGameMaps.class);
     
     public CmdItem(String name, SMaterial material, String command) {
-        super(plugin, PluginKey.of(plugin, "map" + name.toLowerCase().replace(" ", "") + "item"), "map" + name.toLowerCase().replace(" ", "") + "item", ItemBuilders.of(material).displayName("&e&l" + name)
+        super(plugin, ItemBuilders.of(material).displayName("&e&l" + name)
                 .addLoreLine("&7This item runs the command &e/" + command));
+        
+        this.key = PluginKey.of(plugin, name);
 
         StarItems.getItemRegistry().register(getKey(), this);
         
