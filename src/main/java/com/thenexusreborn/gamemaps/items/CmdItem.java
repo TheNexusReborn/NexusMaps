@@ -1,8 +1,8 @@
 package com.thenexusreborn.gamemaps.items;
 
-import com.stardevllc.registry.PluginKey;
-import com.stardevllc.smaterial.SMaterial;
-import com.stardevllc.staritems.ItemBuilders;
+import com.stardevllc.minecraft.registry.PluginKey;
+import com.stardevllc.minecraft.smaterial.SMaterial;
+import com.stardevllc.starcore.ItemBuilders;
 import com.stardevllc.staritems.StarItems;
 import com.stardevllc.staritems.model.CustomItem;
 import com.thenexusreborn.gamemaps.NexusGameMaps;
