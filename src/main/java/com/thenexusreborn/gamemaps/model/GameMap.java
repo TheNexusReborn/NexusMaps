@@ -15,8 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -56,6 +55,15 @@ public class GameMap {
     
     protected GameMap() {
     }
+    
+    public GameMap(String name) {
+        this.name = name;
+    }
+    
+    public GameMap(String url, String name) {
+        this.url = url;
+        this.name = name;
+    }
 
     public boolean isValid() {
         if (this.url == null || this.url.isEmpty()) {
@@ -75,11 +83,6 @@ public class GameMap {
         }
         
         return this.arenaMinimum != null && this.arenaMaximum != null && this.arenaCenter != null;
-    }
-
-    public GameMap(String fileName, String name) {
-        this.url = fileName;
-        this.name = name;
     }
 
     public Position getArenaCenter() {
@@ -214,6 +217,25 @@ public class GameMap {
 
     public void setDownloadedZip(Path downloadedZip) {
         this.downloadedZip = downloadedZip;
+    }
+    
+    public boolean download(JavaPlugin plugin) {
+        if (downloadedZip == null || !Files.exists(downloadedZip)) {
+            Path downloadFolder = FileHelper.subPath(plugin.getDataFolder().toPath(), "mapdownloads");
+            FileHelper.createDirectoryIfNotExists(downloadFolder);
+            
+            String fileName = getName().toLowerCase().replace("'", "").replace(" ", "_") + ".zip";
+            
+            Path existing = FileSystems.getDefault().getPath(downloadFolder.toString(), fileName);
+            if (Files.exists(existing)) {
+                plugin.getLogger().info("Found existing zip for " + name);
+                this.downloadedZip = existing;
+                return true;
+            }
+            
+            downloadedZip = FileHelper.downloadFile(url, downloadFolder, fileName, true);
+        }
+        return downloadedZip != null && Files.exists(downloadedZip);
     }
 
     public boolean unzip(JavaPlugin plugin) {
@@ -381,9 +403,8 @@ public class GameMap {
                 ", votes=" + votes +
                 '}';
     }
-
-    public static GameMap loadFromYaml(FileConfiguration config) {
-        GameMap gameMap = new GameMap();
+    
+    public static <T extends GameMap> T loadFromYaml(T gameMap, FileConfiguration config) {
         gameMap.setId(config.getLong("id"));
         gameMap.setUrl(config.getString("url"));
         gameMap.setName(config.getString("name"));
@@ -398,8 +419,11 @@ public class GameMap {
         gameMap.setArenaCenter((Position) config.get("arena.center"));
         
         gameMap.setActive(config.getBoolean("active"));
-
         return gameMap;
+    }
+
+    public static GameMap loadFromYaml(FileConfiguration config) {
+        return loadFromYaml(new GameMap(), config);
     }
     
     public void setPrefix(String prefix) {
