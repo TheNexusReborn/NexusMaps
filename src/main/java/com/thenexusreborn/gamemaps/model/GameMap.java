@@ -108,6 +108,10 @@ public class GameMap {
     public void setArenaMinimum(Position arenaMinimum) {
         this.arenaMinimum = arenaMinimum;
     }
+    
+    public void setArenaMinimum(Location location) {
+        this.arenaMinimum = new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+    }
 
     public Position getArenaMaximum() {
         return arenaMaximum;
@@ -115,6 +119,10 @@ public class GameMap {
 
     public void setArenaMaximum(Position arenaMaximum) {
         this.arenaMaximum = arenaMaximum;
+    }
+    
+    public void setArenaMaximum(Location location) {
+        this.arenaMaximum = new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     public Location getCenterLocation() {
